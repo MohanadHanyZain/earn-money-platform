@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحب الأرباح - منصتي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <div class="max-w-md mx-auto p-6">
+        <h2 class="text-2xl font-bold mb-6 text-center text-green-400">سحب الأرباح</h2>
+
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6 text-center">
+            <p class="text-gray-400 text-sm">رصيدك الحالي</p>
+            <div id="userPoints" class="text-4xl font-black text-white my-2">0</div>
+            <p class="text-green-500 text-xs font-bold">نقاط جاهزة للسحب</p>
+        </div>
+
+        <form id="withdrawForm" class="space-y-4">
+            <div>
+                <label class="block text-sm mb-2 text-gray-400">اختر العملة (على FaucetPay)</label>
+                <select id="cryptoCurrency" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-green-500">
+                    <option value="LTC">Litecoin (LTC) - أسرع شيء</option>
+                    <option value="USDT">Tether (USDT)</option>
+                    <option value="BTC">Bitcoin (BTC)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm mb-2 text-gray-400">كمية النقاط للسحب</label>
+                <input type="number" id="withdrawAmount" placeholder="أقل كمية 1000 نقطة" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white">
+            </div>
+
+            <div>
+                <label class="block text-sm mb-2 text-gray-400">بريد FaucetPay الإلكتروني</label>
+                <input type="email" id="walletAddress" placeholder="email@example.com" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white" required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition shadow-lg">
+                تقديم طلب السحب
+            </button>
+        </form>
+
+        <p id="msg" class="mt-4 text-center text-sm"></p>
+    </div>
+
+    <script>
+        // إعدادات سوبابيز الخاصة بك
+        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // جلب رصيد المستخدم
+        async function fetchBalance() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('points')
+                .eq('id', user.id)
+                .single();
+            
+            document.getElementById('userPoints').innerText = profile.points;
+        }
+
+        // معالجة طلب السحب
+        document.getElementById('withdrawForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = 'جاري المعالجة...';
+
+            const amount = parseInt(document.getElementById('withdrawAmount').value);
+            const crypto = document.getElementById('cryptoCurrency').value;
+            const wallet = document.getElementById('walletAddress').value;
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            // 1. تسجيل الطلب في جدول withdrawals
+            const { error } = await supabaseClient.from('withdrawals').insert({
+                user_id: user.id,
+                amount_points: amount,
+                crypto_currency: crypto,
+                wallet_address: wallet,
+                status: 'pending' // الطلب ينتظر مراجعتك
+            });
+
+            if (error) {
+                document.getElementById('msg').innerText = "خطأ: " + error.message;
+                document.getElementById('msg').className = "text-red-500 text-center mt-4";
+            } else {
+                // 2. خصم النقاط من بروفايل المستخدم
+                await supabaseClient.rpc('deduct_points', { 
+                    _user_id: user.id, 
+                    _amount: amount 
+                });
+
+                document.getElementById('msg').innerText = "تم تقديم طلبك بنجاح! سيتم مراجعته خلال 24 ساعة.";
+                document.getElementById('msg').className = "text-green-500 text-center mt-4";
+                fetchBalance(); // تحديث الرصيد الظاهر
+            }
+            btn.disabled = false;
+            btn.innerText = 'تقديم طلب السحب';
+        };
+
+        fetchBalance();
+    </script>
+</body>
+</html>

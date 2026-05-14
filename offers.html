@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تنفيذ العروض - جلب تلقائي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- نحتاج مكتبة jQuery لمعالجة طلب الـ JSON بسهولة كما في مثال CPAGrip -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-green-400">قسم العروض المباشرة</h1>
+        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white">العودة للوحة التحكم</a>
+    </nav>
+
+    <div class="max-w-4xl mx-auto p-6">
+        <header class="mb-8 text-center">
+            <h2 class="text-3xl font-bold mb-2">عروض مختارة لك</h2>
+            <p class="text-gray-400">أكمل العروض أدناه للحصول على النقاط فوراً</p>
+        </header>
+
+        <!-- حاوية العروض -->
+        <div id="offersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- رسالة تحميل مؤقتة -->
+            <div class="text-center col-span-full py-10 text-gray-500">جاري جلب أفضل العروض لبلدك...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. إعدادات سوبابيز ---
+        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadCPAGripOffers() {
+            // التأكد من تسجيل دخول المستخدم للحصول على الـ ID
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            const container = $('#offersContainer');
+            
+            // رابط التغذية الخاص بك مع إضافة tracking_id ديناميكياً
+            // استخدمنا الـ Public Key كما هو موصى به للـ Client-side
+            const api_url = `https://www.cpagrip.com/common/offer_feed_json.php?user_id=1862167&pubkey=027b211e5bc0d0a72610c88b01c69675&tracking_id=${user.id}`;
+
+            $.getJSON(api_url, function(data) {
+                container.empty(); // مسح رسالة التحميل
+
+                if (data.offers && data.offers.length > 0) {
+                    $.each(data.offers, function(i, offer) {
+                        // حساب نقاط تقريبي (مثلاً الـ Payout مضروب في 1000)
+                        // يمكنك تعديل المعادلة حسب رغبتك
+                        const points = Math.floor(offer.payout * 700);
+
+                        const card = `
+                            <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-green-500 transition group flex flex-col justify-between">
+                                <div>
+                                    <div class="flex justify-between items-start mb-4">
+                                        <h3 class="text-lg font-bold leading-tight">${offer.title}</h3>
+                                        <span class="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap mr-2">
+                                            +${points} نقطة
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-400 text-xs mb-6">${offer.description}</p>
+                                </div>
+                                <a href="${offer.offerlink}" target="_blank" class="block w-full bg-green-500 group-hover:bg-green-600 text-white text-center py-2 rounded font-bold transition">
+                                    احصل على المكافأة
+                                </a>
+                            </div>
+                        `;
+                        container.append(card);
+                    });
+                } else {
+                    container.html('<p class="text-center col-span-full text-red-400">نأسف، لا توجد عروض متاحة لبلدك حالياً.</p>');
+                }
+            }).fail(function() {
+                container.html('<p class="text-center col-span-full text-red-400">خطأ في الاتصال بالسيرفر، يرجى تحديث الصفحة.</p>');
+            });
+        }
+
+        // تشغيل الدالة عند تحميل الصفحة
+        $(document).ready(function() {
+            loadCPAGripOffers();
+        });
+    </script>
+</body>
+</html>

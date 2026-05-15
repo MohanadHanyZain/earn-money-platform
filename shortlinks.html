@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الروابط المختصرة - أرباحي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <!-- شريط التنقل (Navbar) -->
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ عودة للرئيسية</a>
+            <h1 class="text-xl font-bold text-orange-400">قسم الروابط المختصرة</h1>
+        </div>
+        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700">
+            <span class="text-gray-400 text-sm">نقاطك: </span>
+            <span id="navPoints" class="font-bold text-green-400">...</span>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto p-6">
+        <!-- كرت التعليمات -->
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-orange-400 mb-1">تخطى الروابط واجمع النقاط يومياً!</h2>
+                <p class="text-gray-400 text-sm">يتم تجديد الروابط تلقائياً بعد مرور 24 ساعة من تاريخ تخطيك للرابط.</p>
+            </div>
+            <div class="bg-orange-600/20 text-orange-400 border border-orange-500/30 px-4 py-2 rounded-lg text-center font-bold">
+                🔥 الرابط الواحد = 3 نقاط
+            </div>
+        </div>
+
+        <!-- مكان تحميل الروابط (الهيكل الشبكي) -->
+        <div id="linksLoader" class="text-center py-12 text-gray-400 text-lg">جاري تحميل الروابط والتحقق من التجديد اليومي...</div>
+        <div id="linksContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 hidden">
+            <!-- الأزرار سيتم إنشاؤها هنا عبر الجافاسكريبت -->
+        </div>
+    </div>
+
+    <script>
+        // --- 1. إعدادات سوبابيز ---
+        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUserId = null;
+
+        // --- 2. التحقق من المستخدم وجلب البيانات ---
+        async function initShortlinksPage() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            currentUserId = user.id;
+
+            // جلب وعرض نقاط المستخدم الحالية في النبار
+            const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', currentUserId).single();
+            if (profile) document.getElementById('navPoints').innerText = profile.points;
+
+            // جلب الروابط وتحديث الأزرار
+            await loadAndRenderLinks();
+        }
+
+        // --- 3. جلب الروابط والتحقق من قفل الـ 24 ساعة ---
+        async function loadAndRenderLinks() {
+            // أ) جلب الـ 50 رابط من جدول قاعدة البيانات
+            const { data: allLinks, error: linksError } = await supabaseClient
+                .from('available_links')
+                .select('*')
+                .order('id', { ascending: true });
+
+            // ب) تحديد وقت الـ 24 ساعة الماضية
+            const time24HoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+            // جـ) جلب التخطيات التي تمت خلال آخر 24 ساعة فقط لهذا المستخدم
+            const { data: recentClicks, error: clicksError } = await supabaseClient
+                .from('user_clicks')
+                .select('link_id')
+                .eq('user_id', currentUserId)
+                .gte('clicked_at', time24HoursAgo);
+
+            if (linksError || clicksError) {
+                document.getElementById('linksLoader').innerText = "حدث خطأ أثناء تحميل الروابط.";
+                console.error(linksError || clicksError);
+                return;
+            }
+
+            // د) استخراج الـ IDs للروابط المكتملة
+            const completedLinkIds = recentClicks.map(click => click.link_id);
+
+            const container = document.getElementById('linksContainer');
+            const loader = document.getElementById('linksLoader');
+            container.innerHTML = '';
+
+            // هـ) بناء الأزرار وتصميمها
+            allLinks.forEach((link, index) => {
+                const isDone = completedLinkIds.includes(link.id);
+                
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border transition flex flex-col justify-between gap-4 ${
+                    isDone ? 'bg-gray-800/40 border-gray-800 text-gray-500' : 'bg-gray-800 border-gray-700 hover:border-orange-500/50'
+                }`;
+
+                // معلومات الكرت داخلياً
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs uppercase px-2 py-0.5 rounded ${isDone ? 'bg-gray-900 text-gray-600' : 'bg-orange-600/10 text-orange-400'}">${link.provider_name}</span>
+                        <span class="text-xs text-gray-500">رقم #${index + 1}</span>
+                    </div>
+                    <div class="text-center font-bold text-sm ${isDone ? 'text-gray-600' : 'text-gray-200'}">
+                        رابط مكافأة (+${link.points_reward} نقاط)
+                    </div>
+                `;
+
+                // إنشاء الزرار الخاص بالتخطي
+                const actionBtn = document.createElement('button');
+                actionBtn.className = `w-full py-2 rounded-lg font-bold text-sm transition ${
+                    isDone 
+                    ? 'bg-gray-900 text-gray-600 cursor-not-allowed' 
+                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20'
+                }`;
+                actionBtn.disabled = isDone;
+                actionBtn.innerText = isDone ? '🔒 تم التخطي بنجاح' : '⚡ ابدأ التخطي الآن';
+
+                if (!isDone) {
+                    actionBtn.onclick = () => {
+                        // استبدال كود الـ {uid} برقم المستخدم الفعلي وتمريره لشركة الاختصار
+                        let destinationUrl = link.short_url.replace('{uid}', currentUserId);
+                        window.open(destinationUrl, '_blank');
+                    };
+                }
+
+                card.appendChild(actionBtn);
+                container.appendChild(card);
+            });
+
+            // إخفاء اللودر وإظهار الجريد
+            loader.classList.add('hidden');
+            container.classList.remove('hidden');
+        }
+
+        // تشغيل الصفحة عند التحميل
+        initShortlinksPage();
+    </script>
+</body>
+</html>

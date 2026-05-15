@@ -48,15 +48,29 @@
 
         let currentUserId = null;
 
-        // --- 2. التحقق من المستخدم وجلب البيانات عند فتح الصفحة ---
+        // --- 2. دالة تهيئة الصفحة وجلب معرف المستخدم بأمان ---
         async function initShortlinksPage() {
+            // أ) محاولة جلب المستخدم بالطريقة الرسمية
             const { data: { user } } = await supabaseClient.auth.getUser();
 
-            if (!user) {
+            if (user) {
+                currentUserId = user.id;
+            } else {
+                // ب) طريقة احتياطية: إذا فشلت الطريقة الرسمية بسبب بطء السيرفر، نقرأ الكاش المحلي فوراً
+                const sessionText = localStorage.getItem('sb-qilhlovlotvieatbtkhw-auth-token');
+                if (sessionText) {
+                    const sessionData = JSON.parse(sessionText);
+                    currentUserId = sessionData?.user?.id;
+                }
+            }
+
+            // لو فشلت كل المحاولات والمستخدم مش مسجل دخول، حوله لصفحة تسجيل الدخول
+            if (!currentUserId) {
                 window.location.href = 'auth.html';
                 return;
             }
-            currentUserId = user.id;
+
+            console.log("تم قنص الـ ID بنجاح وهو:", currentUserId);
 
             // عرض نقاط المستخدم الحالية في الـ Navbar
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', currentUserId).single();
@@ -68,16 +82,13 @@
 
         // --- 3. جلب الروابط والتحقق من قفل الـ 24 ساعة ---
         async function loadAndRenderLinks() {
-            // أ) جلب الروابط المخزنة من جدول قاعدة البيانات
             const { data: allLinks, error: linksError } = await supabaseClient
                 .from('available_links')
                 .select('*')
                 .order('id', { ascending: true });
 
-            // ب) حساب وقت الـ 24 ساعة الماضية
             const time24HoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-            // جـ) جلب التخطيات الناجحة لهذا المستخدم في آخر 24 ساعة فقط
             const { data: recentClicks, error: clicksError } = await supabaseClient
                 .from('user_clicks')
                 .select('link_id')
@@ -90,14 +101,11 @@
                 return;
             }
 
-            // د) استخراج أرقام (IDs) الروابط المكتملة لمنعها
             const completedLinkIds = recentClicks.map(click => click.link_id);
-
             const container = document.getElementById('linksContainer');
             const loader = document.getElementById('linksLoader');
             container.innerHTML = '';
 
-            // هـ) بناء وتصميم كروت الروابط ديناميكياً
             allLinks.forEach((link, index) => {
                 const isDone = completedLinkIds.includes(link.id);
                 
@@ -106,7 +114,6 @@
                     isDone ? 'bg-gray-800/40 border-gray-800 text-gray-500' : 'bg-gray-800 border-gray-700 hover:border-orange-500/50'
                 }`;
 
-                // تصميم الكرت الداخلي معلومات المزود والنقاط
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
                         <span class="text-xs uppercase px-2 py-0.5 rounded ${isDone ? 'bg-gray-900 text-gray-600' : 'bg-orange-600/10 text-orange-400'}">${link.provider_name}</span>
@@ -117,7 +124,6 @@
                     </div>
                 `;
 
-                // إنشاء زر التخطي لكل رابط
                 const actionBtn = document.createElement('button');
                 actionBtn.className = `w-full py-2 rounded-lg font-bold text-sm transition ${
                     isDone 
@@ -127,11 +133,11 @@
                 actionBtn.disabled = isDone;
                 actionBtn.innerText = isDone ? '🔒 تم التخطي بنجاح' : '⚡ ابدأ التخطي الآن';
 
-                // تشغيل الرابط واستبدال الـ USERID بالرقم المشفر الحقيقي للمستخدم
+                // تشغيل الرابط واستبدال الـ USERID فوراً عند الضغط
                 if (!isDone) {
                     actionBtn.onclick = () => {
-                        // الحركة السحرية لتأمين الأرباح: استبدال النص بـ ID المستخدم قبل التوجيه لموقع الاختصار
-                        const finalLink = link.short_url.replace('USERID', currentUserId);
+                        // استبدال الكلمة بأي شكل كانت (كابيتال أو سمول) بالـ ID الحقيقي المقروء بأمان
+                        let finalLink = link.short_url.replace(/userid/gi, currentUserId);
                         window.open(finalLink, '_blank');
                     };
                 }
@@ -140,7 +146,6 @@
                 container.appendChild(card);
             });
 
-            // إخفاء اللودر وإظهار جدول الروابط للمستخدم
             loader.classList.add('hidden');
             container.classList.remove('hidden');
         }

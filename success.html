@@ -12,7 +12,7 @@
         <!-- أنيميشن لودر دائري بسيط -->
         <div id="loader" class="inline-block w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-6"></div>
         
-        <!-- أيقونة النجاح (هتظهر لما الشحن يخلص) -->
+        <!-- أيقونة النجاح -->
         <div id="successIcon" class="hidden text-6xl mb-6">🎉</div>
 
         <h2 id="statusTitle" class="text-2xl font-bold text-gray-200 mb-2">جاري التحقق من اختصار الرابط...</h2>
@@ -29,10 +29,11 @@
         const userId = urlParams.get('uid');
         const linkId = urlParams.get('linkid');
 
-        // رابط الـ Edge Function الخاص بك في سوبابيز
-        // (هنغير الرابط ده للرابط الفعلي بتاعك لما تعمل الـ Function)
+        // رابط الـ Edge Function الموجه لـ smart-service
         const EDGE_FUNCTION_URL = 'https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/smart-service';
-
+        
+        // المفتاح الخاص بمشروعك لحل مشكلة الـ 401
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
 
         async function verifyAndReward() {
             if (!userId || !linkId) {
@@ -41,11 +42,13 @@
             }
 
             try {
-                // نرسل البيانات للـ Backend بأمان
+                // إرسال الطلب مع الـ Headers المطلوبة للـ Authentication والـ CORS
                 const response = await fetch(EDGE_FUNCTION_URL, {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
                     body: JSON.stringify({ userId: userId, linkId: linkId })
                 });
@@ -53,15 +56,15 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    // نجاح العملية
+                    // نجاح العملية بالكامل وتحديث الواجهة
                     document.getElementById('loader').classList.add('hidden');
                     document.getElementById('successIcon').classList.remove('hidden');
                     document.getElementById('statusTitle').innerText = "مبروك! تم إضافة النقاط";
-                    document.getElementById('statusTitle').classList.add('text-green-400');
-                    document.getElementById('statusDesc').innerText = `تمت إضافة 3 نقاط بنجاح إلى حسابك.`;
+                    document.getElementById('statusTitle').className = "text-2xl font-bold text-green-400 mb-2";
+                    document.getElementById('statusDesc').innerText = `تمت إضافة النقاط بنجاح إلى حسابك وقفل الرابط لـ 24 ساعة.`;
                     document.getElementById('backBtn').classList.remove('hidden');
                 } else {
-                    // الشركة أو الـ Backend رفض (مثلاً حاول يغش أو يكرر الرابط)
+                    // السيرفر رفض (بسبب تكرار الرابط في أقل من 24 ساعة مثلاً)
                     showError(result.error || "فشل التحقق، قد يكون الرابط تم تخطيه بالفعل.");
                 }
 
@@ -74,12 +77,12 @@
         function showError(message) {
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('statusTitle').innerText = "خطأ في التحقق ❌";
-            document.getElementById('statusTitle').classList.add('text-red-500');
+            document.getElementById('statusTitle').className = "text-2xl font-bold text-red-500 mb-2";
             document.getElementById('statusDesc').innerText = message;
             document.getElementById('backBtn').classList.remove('hidden');
         }
 
-        // تشغيل الفحص فوراً عند فتح الصفحة
+        // تشغيل الفحص فوراً عند تحميل الصفحة
         verifyAndReward();
     </script>
 </body>

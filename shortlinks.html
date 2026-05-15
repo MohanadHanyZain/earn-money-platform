@@ -9,7 +9,6 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
 
-    <!-- شريط التنقل (Navbar) -->
     <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
         <div class="flex items-center gap-4">
             <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ عودة للرئيسية</a>
@@ -22,7 +21,6 @@
     </nav>
 
     <div class="max-w-5xl mx-auto p-6">
-        <!-- كرت التعليمات -->
         <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h2 class="text-xl font-bold text-orange-400 mb-1">تخطى الروابط واجمع النقاط يومياً!</h2>
@@ -33,71 +31,46 @@
             </div>
         </div>
 
-        <!-- مكان تحميل الروابط (الهيكل الشبكي) -->
         <div id="linksLoader" class="text-center py-12 text-gray-400 text-lg">جاري تحميل الروابط والتحقق من التجديد اليومي...</div>
-        <div id="linksContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 hidden">
-            <!-- الأزرار سيتم إنشاؤها هنا عبر الجافاسكريبت -->
-        </div>
+        <div id="linksContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 hidden"></div>
     </div>
 
     <script>
-        // --- 1. إعدادات سوبابيز ---
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUserId = null;
 
-        // --- 2. دالة تهيئة الصفحة وجلب معرف المستخدم بأمان ---
         async function initShortlinksPage() {
-            // أ) محاولة جلب المستخدم بالطريقة الرسمية
             const { data: { user } } = await supabaseClient.auth.getUser();
-
             if (user) {
                 currentUserId = user.id;
             } else {
-                // ب) طريقة احتياطية: إذا فشلت الطريقة الرسمية بسبب بطء السيرفر، نقرأ الكاش المحلي فوراً
                 const sessionText = localStorage.getItem('sb-qilhlovlotvieatbtkhw-auth-token');
                 if (sessionText) {
-                    const sessionData = JSON.parse(sessionText);
-                    currentUserId = sessionData?.user?.id;
+                    currentUserId = JSON.parse(sessionText)?.user?.id;
                 }
             }
 
-            // لو فشلت كل المحاولات والمستخدم مش مسجل دخول، حوله لصفحة تسجيل الدخول
             if (!currentUserId) {
                 window.location.href = 'auth.html';
                 return;
             }
 
-            console.log("تم قنص الـ ID بنجاح وهو:", currentUserId);
-
-            // عرض نقاط المستخدم الحالية في الـ Navbar
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', currentUserId).single();
             if (profile) document.getElementById('navPoints').innerText = profile.points;
 
-            // جلب الروابط وتحديث شكل الأزرار
             await loadAndRenderLinks();
         }
 
-        // --- 3. جلب الروابط والتحقق من قفل الـ 24 ساعة ---
         async function loadAndRenderLinks() {
-            const { data: allLinks, error: linksError } = await supabaseClient
-                .from('available_links')
-                .select('*')
-                .order('id', { ascending: true });
-
+            const { data: allLinks, error: linksError } = await supabaseClient.from('available_links').select('*').order('id', { ascending: true });
             const time24HoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-            const { data: recentClicks, error: clicksError } = await supabaseClient
-                .from('user_clicks')
-                .select('link_id')
-                .eq('user_id', currentUserId)
-                .gte('clicked_at', time24HoursAgo);
+            const { data: recentClicks, error: clicksError } = await supabaseClient.from('user_clicks').select('link_id').eq('user_id', currentUserId).gte('clicked_at', time24HoursAgo);
 
             if (linksError || clicksError) {
                 document.getElementById('linksLoader').innerText = "حدث خطأ أثناء تحميل الروابط.";
-                console.error(linksError || clicksError);
                 return;
             }
 
@@ -108,37 +81,24 @@
 
             allLinks.forEach((link, index) => {
                 const isDone = completedLinkIds.includes(link.id);
-                
                 const card = document.createElement('div');
-                card.className = `p-4 rounded-xl border transition flex flex-col justify-between gap-4 ${
-                    isDone ? 'bg-gray-800/40 border-gray-800 text-gray-500' : 'bg-gray-800 border-gray-700 hover:border-orange-500/50'
-                }`;
-
+                card.className = `p-4 rounded-xl border transition flex flex-col justify-between gap-4 ${isDone ? 'bg-gray-800/40 border-gray-800 text-gray-500' : 'bg-gray-800 border-gray-700 hover:border-orange-500/50'}`;
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
                         <span class="text-xs uppercase px-2 py-0.5 rounded ${isDone ? 'bg-gray-900 text-gray-600' : 'bg-orange-600/10 text-orange-400'}">${link.provider_name}</span>
-                        <span class="text-xs text-gray-500">رابط رقم #${index + 1}</span>
+                        <span class="text-xs text-gray-500">رابط رقم #${link.id}</span>
                     </div>
-                    <div class="text-center font-bold text-sm ${isDone ? 'text-gray-600' : 'text-gray-200'}">
-                        رابط مكافأة (+${link.points_reward} نقاط)
-                    </div>
+                    <div class="text-center font-bold text-sm ${isDone ? 'text-gray-600' : 'text-gray-200'}">رابط مكافأة (+${link.points_reward} نقاط)</div>
                 `;
 
                 const actionBtn = document.createElement('button');
-                actionBtn.className = `w-full py-2 rounded-lg font-bold text-sm transition ${
-                    isDone 
-                    ? 'bg-gray-900 text-gray-600 cursor-not-allowed' 
-                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20'
-                }`;
+                actionBtn.className = `w-full py-2 rounded-lg font-bold text-sm transition ${isDone ? 'bg-gray-900 text-gray-600 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg'}`;
                 actionBtn.disabled = isDone;
                 actionBtn.innerText = isDone ? '🔒 تم التخطي بنجاح' : '⚡ ابدأ التخطي الآن';
 
-                // تشغيل الرابط واستبدال الـ USERID فوراً عند الضغط
                 if (!isDone) {
                     actionBtn.onclick = () => {
-                        // استبدال الكلمة بأي شكل كانت (كابيتال أو سمول) بالـ ID الحقيقي المقروء بأمان
-                        let finalLink = link.short_url.replace(/userid/gi, currentUserId);
-                        window.open(finalLink, '_blank');
+                        window.open(link.short_url, '_blank'); // يفتح الرابط القصير المباشر دون تعديل
                     };
                 }
 
@@ -150,7 +110,6 @@
             container.classList.remove('hidden');
         }
 
-        // تشغيل التهيئة بمجرد تحميل الصفحة
         initShortlinksPage();
     </script>
 </body>

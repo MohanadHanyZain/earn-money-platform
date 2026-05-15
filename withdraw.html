@@ -30,7 +30,7 @@
 
             <div>
                 <label class="block text-sm mb-2 text-gray-400">كمية النقاط للسحب</label>
-                <input type="number" id="withdrawAmount" placeholder="أقل كمية 1000 نقطة" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white">
+                <input type="number" id="withdrawAmount" min="1000" placeholder="أقل كمية 1000 نقطة" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white" required>
             </div>
 
             <div>
@@ -43,7 +43,7 @@
             </button>
         </form>
 
-        <p id="msg" class="mt-4 text-center text-sm"></p>
+        <p id="msg" class="mt-4 text-center text-sm font-semibold"></p>
     </div>
 
     <script>
@@ -52,10 +52,15 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // جلب رصيد المستخدم
+        let currentPoints = 0;
+
+        // جلب رصيد المستخدم وعرضه
         async function fetchBalance() {
             const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) return;
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
 
             const { data: profile } = await supabaseClient
                 .from('profiles')
@@ -63,50 +68,94 @@
                 .eq('id', user.id)
                 .single();
             
-            document.getElementById('userPoints').innerText = profile.points;
+            if (profile) {
+                currentPoints = parseInt(profile.points) || 0;
+                document.getElementById('userPoints').innerText = currentPoints;
+            }
         }
 
-        // معالجة طلب السحب
+        // معالجة طلب السحب بأمان
         document.getElementById('withdrawForm').onsubmit = async (e) => {
             e.preventDefault();
+            
+            const msgEl = document.getElementById('msg');
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = 'جاري المعالجة...';
-
+            
+            msgEl.innerText = ""; // تهيئة الرسالة
+            
             const amount = parseInt(document.getElementById('withdrawAmount').value);
             const crypto = document.getElementById('cryptoCurrency').value;
             const wallet = document.getElementById('walletAddress').value;
 
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            // 1. فحص الحماية البرمجية الأساسية قبل مراسلة السيرفر
+            if (isNaN(amount) || amount < 1000) {
+                msgEl.innerText = "❌ عذراً، الحد الأدنى للسحب هو 1000 نقطة.";
+                msgEl.className = "text-red-500 text-center mt-4";
+                return;
+            }
 
-            // 1. تسجيل الطلب في جدول withdrawals
-            const { error } = await supabaseClient.from('withdrawals').insert({
-                user_id: user.id,
-                amount_points: amount,
-                crypto_currency: crypto,
-                wallet_address: wallet,
-                status: 'pending' // الطلب ينتظر مراجعتك
-            });
+            if (amount > currentPoints) {
+                msgEl.innerText = `❌ رصيدك غير كافٍ. رصيدك الحالي هو ${currentPoints} نقطة فقط.`;
+                msgEl.className = "text-red-500 text-center mt-4";
+                return;
+            }
 
-            if (error) {
-                document.getElementById('msg').innerText = "خطأ: " + error.message;
-                document.getElementById('msg').className = "text-red-500 text-center mt-4";
-            } else {
-                // 2. خصم النقاط من بروفايل المستخدم
-                await supabaseClient.rpc('deduct_points', { 
+            // قفل الزرار لمنع الضغط المتكرر أثناء تنفيذ العملية
+            btn.disabled = true;
+            btn.innerText = 'جاري المعالجة وأمان العملية...';
+
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) throw new Error("لم يتم العثور على جلسة مستخدم نشطة.");
+
+                // 2. الأمان أولاً: استدعاء دالة الخصم من قاعدة البيانات مباشرة
+                // الدالة ترجع خطأ تلقائياً إذا حاول التلاعب بالبيانات بفضل شرط الـ IF بالـ SQL الخاص بك
+                const { error: deductError } = await supabaseClient.rpc('deduct_points', { 
                     _user_id: user.id, 
                     _amount: amount 
                 });
 
-                document.getElementById('msg').innerText = "تم تقديم طلبك بنجاح! سيتم مراجعته خلال 24 ساعة.";
-                document.getElementById('msg').className = "text-green-500 text-center mt-4";
-                fetchBalance(); // تحديث الرصيد الظاهر
+                if (deductError) {
+                    throw new Error(deductError.message);
+                }
+
+                // 3. التسجيل ثانياً: طالما نجح الخصم بنجاح، نقوم الآن بتسجيل الطلب بأمان تام
+                const { error: insertError } = await supabaseClient.from('withdrawals').insert({
+                    user_id: user.id,
+                    amount_points: amount,
+                    crypto_currency: crypto,
+                    wallet_address: wallet,
+                    status: 'pending'
+                });
+
+                if (insertError) {
+                    // حماية احتياطية نادرة جداً: لو نجح الخصم وفشل التسجيل لأي سبب في شبكة قاعدة البيانات
+                    throw new Error("حدثت مشكلة أثناء تسجيل الطلب، يرجى التواصل مع الدعم الفني.");
+                }
+
+                // نجاح العملية بالكامل
+                msgEl.innerText = "🎉 تم تقديم طلبك بنجاح! سيتم مراجعته وإرساله لمحفظتك خلال 24 ساعة.";
+                msgEl.className = "text-green-500 text-center mt-4";
+                document.getElementById('withdrawForm').reset(); // تصفير الحقول المتواجدة بالفروم
+                
+                await fetchBalance(); // تحديث رقم الرصيد في الشاشة فوراً بعد الخصم
+
+            } catch (err) {
+                msgEl.innerText = "خطأ: " + err.message;
+                msgEl.className = "text-red-500 text-center mt-4";
+            } finally {
+                // إعادة تفعيل الزرار
+                btn.disabled = false;
+                btn.innerText = 'تقديم طلب السحب';
             }
-            btn.disabled = false;
-            btn.innerText = 'تقديم طلب السحب';
         };
 
-        fetchBalance();
+        // تهيئة الصفحة عند الدخول أول مرة
+        initPage();
+        
+        async function initPage() {
+            await fetchBalance();
+        }
     </script>
 </body>
 </html>

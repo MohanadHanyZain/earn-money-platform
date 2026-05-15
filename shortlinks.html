@@ -48,7 +48,7 @@
 
         let currentUserId = null;
 
-        // --- 2. التحقق من المستخدم وجلب البيانات ---
+        // --- 2. التحقق من المستخدم وجلب البيانات عند فتح الصفحة ---
         async function initShortlinksPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
 
@@ -58,26 +58,26 @@
             }
             currentUserId = user.id;
 
-            // جلب وعرض نقاط المستخدم الحالية في النبار
+            // عرض نقاط المستخدم الحالية في الـ Navbar
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', currentUserId).single();
             if (profile) document.getElementById('navPoints').innerText = profile.points;
 
-            // جلب الروابط وتحديث الأزرار
+            // جلب الروابط وتحديث شكل الأزرار
             await loadAndRenderLinks();
         }
 
         // --- 3. جلب الروابط والتحقق من قفل الـ 24 ساعة ---
         async function loadAndRenderLinks() {
-            // أ) جلب الـ 50 رابط من جدول قاعدة البيانات
+            // أ) جلب الروابط المخزنة من جدول قاعدة البيانات
             const { data: allLinks, error: linksError } = await supabaseClient
                 .from('available_links')
                 .select('*')
                 .order('id', { ascending: true });
 
-            // ب) تحديد وقت الـ 24 ساعة الماضية
+            // ب) حساب وقت الـ 24 ساعة الماضية
             const time24HoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-            // جـ) جلب التخطيات التي تمت خلال آخر 24 ساعة فقط لهذا المستخدم
+            // جـ) جلب التخطيات الناجحة لهذا المستخدم في آخر 24 ساعة فقط
             const { data: recentClicks, error: clicksError } = await supabaseClient
                 .from('user_clicks')
                 .select('link_id')
@@ -90,14 +90,14 @@
                 return;
             }
 
-            // د) استخراج الـ IDs للروابط المكتملة
+            // د) استخراج أرقام (IDs) الروابط المكتملة لمنعها
             const completedLinkIds = recentClicks.map(click => click.link_id);
 
             const container = document.getElementById('linksContainer');
             const loader = document.getElementById('linksLoader');
             container.innerHTML = '';
 
-            // هـ) بناء الأزرار وتصميمها
+            // هـ) بناء وتصميم كروت الروابط ديناميكياً
             allLinks.forEach((link, index) => {
                 const isDone = completedLinkIds.includes(link.id);
                 
@@ -106,18 +106,18 @@
                     isDone ? 'bg-gray-800/40 border-gray-800 text-gray-500' : 'bg-gray-800 border-gray-700 hover:border-orange-500/50'
                 }`;
 
-                // معلومات الكرت داخلياً
+                // تصميم الكرت الداخلي معلومات المزود والنقاط
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
                         <span class="text-xs uppercase px-2 py-0.5 rounded ${isDone ? 'bg-gray-900 text-gray-600' : 'bg-orange-600/10 text-orange-400'}">${link.provider_name}</span>
-                        <span class="text-xs text-gray-500">رقم #${index + 1}</span>
+                        <span class="text-xs text-gray-500">رابط رقم #${index + 1}</span>
                     </div>
                     <div class="text-center font-bold text-sm ${isDone ? 'text-gray-600' : 'text-gray-200'}">
                         رابط مكافأة (+${link.points_reward} نقاط)
                     </div>
                 `;
 
-                // إنشاء الزر الخاص بالتخطي
+                // إنشاء زر التخطي لكل رابط
                 const actionBtn = document.createElement('button');
                 actionBtn.className = `w-full py-2 rounded-lg font-bold text-sm transition ${
                     isDone 
@@ -127,39 +127,12 @@
                 actionBtn.disabled = isDone;
                 actionBtn.innerText = isDone ? '🔒 تم التخطي بنجاح' : '⚡ ابدأ التخطي الآن';
 
+                // تشغيل الرابط واستبدال الـ USERID بالرقم المشفر الحقيقي للمستخدم
                 if (!isDone) {
-                    actionBtn.onclick = async () => {
-                        // تغيير نص الزرار لإعلام المستخدم بجاري التجهيز
-                        actionBtn.innerText = '⏳ جاري تجهيز الرابط المخصص...';
-                        actionBtn.disabled = true;
-
-                        // 1. رابط صفحة النجاح النهائي المراد تحويل المستخدم إليه
-                        const finalDestination = `https://earn-money-platform.vercel.app/success.html?uid=${currentUserId}&linkid=${link.id}`;
-                        
-                        // 2. الـ API الخاص بحسابك في exe.io
-                        const EXE_API_TOKEN = '5cd0318466182b1e5dc77a9697802e9e32e4be1c'; 
-
-                        // 3. طلب الاختصار اللحظي عبر خوادم شركة الاختصار
-                        const apiUrl = `https://exe.io/api?api=${EXE_API_TOKEN}&url=${encodeURIComponent(finalDestination)}`;
-
-                        try {
-                            const response = await fetch(apiUrl);
-                            const data = await response.json();
-
-                            if (data.status === 'success' && data.shortenedUrl) {
-                                // فتح الرابط المختصر الذكي الذي يحمل معرف الحساب مشفراً بداخله
-                                window.open(data.shortenedUrl, '_blank');
-                            } else {
-                                alert('حدث خطأ في نظام الاختصار، يرجى المحاولة مرة أخرى.');
-                            }
-                        } catch (error) {
-                            console.error('Error with API:', error);
-                            alert('فشل الاتصال بموقع الاختصار، تأكد من اتصالك بالإنترنت.');
-                        } finally {
-                            // إعادة الزر لوضعه بعد انتهاء العملية
-                            actionBtn.innerText = '⚡ ابدأ التخطي الآن';
-                            actionBtn.disabled = false;
-                        }
+                    actionBtn.onclick = () => {
+                        // الحركة السحرية لتأمين الأرباح: استبدال النص بـ ID المستخدم قبل التوجيه لموقع الاختصار
+                        const finalLink = link.short_url.replace('USERID', currentUserId);
+                        window.open(finalLink, '_blank');
                     };
                 }
 
@@ -167,12 +140,12 @@
                 container.appendChild(card);
             });
 
-            // إخفاء اللودر وإظهار الشبكة
+            // إخفاء اللودر وإظهار جدول الروابط للمستخدم
             loader.classList.add('hidden');
             container.classList.remove('hidden');
         }
 
-        // تشغيل الصفحة عند التحميل
+        // تشغيل التهيئة بمجرد تحميل الصفحة
         initShortlinksPage();
     </script>
 </body>

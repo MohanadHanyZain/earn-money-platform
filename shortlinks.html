@@ -129,8 +129,8 @@
 
                 if (!isDone) {
                     actionBtn.onclick = () => {
-                        // استبدال كود الـ {uid} برقم المستخدم الفعلي وتمريره لشركة الاختصار
-                        let destinationUrl = link.short_url.replace('{uid}', currentUserId);
+                        // التعديل السحري هنا: استبدال كلمة USERID بالـ ID الفعلي للمستخدم
+                        let destinationUrl = link.short_url.replace('USERID', currentUserId);
                         window.open(destinationUrl, '_blank');
                     };
                 }

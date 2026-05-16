@@ -22,18 +22,21 @@
 
     <div class="max-w-2xl mx-auto p-6 mt-10">
         
-        <!-- مكان إعلان بنر علوي من Adsterra (اختياري) -->
-        <script>
-  atOptions = {
-    'key' : '3332ff0dea9a4b480c786186c2112ea9',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/3332ff0dea9a4b480c786186c2112ea9/invoke.js"></script>
-
+        <!-- إعلان البنر 468x60 العلوي الخاص بك -->
+        <div class="flex justify-center mb-6 overflow-hidden max-w-full">
+            <div class="bg-gray-800 p-1 text-center rounded-lg border border-gray-700">
+                <script>
+                    atOptions = {
+                        'key' : '3332ff0dea9a4b480c786186c2112ea9',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                </script>
+                <script src="https://www.highperformanceformat.com/3332ff0dea9a4b480c786186c2112ea9/invoke.js"></script>
+            </div>
+        </div>
 
         <!-- كرت المطالبة الرئيسي -->
         <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700 text-center">
@@ -50,18 +53,18 @@
 
                 <!-- عداد الانتظار (يظهر فقط إذا كان الزر مقفلاً) -->
                 <div id="cooldownContainer" class="hidden text-orange-400 font-bold text-lg animate-pulse">
-                    ⏱️ يمكنك المطالبة مجدداً بعد: <span id="cooldownTimer">00:00</span>
+                    ⏱️ يمكنك المطالبة مجدداً بعد: <span id="cooldownTimer">05:00</span>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- ⚠️ مكان وضع إعلان الـ Social Bar الذكي من Adsterra -->
-    <!-- ضع كود الـ Script الخاص بالـ Social Bar الذي نسخته من Adsterra هنا تماماً قبل إغلاق الـ body -->
-    <!-- مثال: <script type='text/javascript' src='//plxxxx.invoke.js'></script> -->
+    <!-- كود الـ Social Bar الحقيقي الخاص بك لربح تلقائي من مجرد فتح الصفحة -->
+    <script src="https://pl29465244.effectivecpmnetwork.com/d6/a7/90/d6a790a2620fed6eed0f53885cbb2f75.js"></script>
 
     <script>
+        // --- إعدادات سوبابيز الخاصة بك والمحفوظة لدينا ---
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -73,17 +76,17 @@
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) return window.location.href = 'auth.html';
 
-            // جلب رصيد النقاط
+            // جلب رصيد النقاط الحالي وعرضه بالأعلى
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', user.id).single();
             if (profile) document.getElementById('topPoints').innerText = profile.points;
 
-            // التحقق هل المستخدم لديه حظر انتظار حالي (Cooldown) بالخلفية
+            // التحقق هل المستخدم لديه حظر انتظار حالي (Cooldown) مخزن في السيرفر
             const { data: claimData } = await supabaseClient.from('faucet_claims').select('last_claimed_at').eq('user_id', user.id).single();
             
             if (claimData) {
                 const lastClaimTime = new Date(claimData.last_claimed_at).getTime();
                 const timePassed = Math.floor((Date.now() - lastClaimTime) / 1000);
-                const cooldownDuration = 300; // 5 دقائق
+                const cooldownDuration = 300; // 5 دقائق تعادل 300 ثانية
 
                 if (timePassed < cooldownDuration) {
                     startCooldown(cooldownDuration - timePassed);
@@ -97,11 +100,11 @@
             claimBtn.disabled = true;
             claimBtn.innerText = "جاري التحقق... ⏳";
 
-            // استدعاء دالة السيرفر الأمنية لطلب النقاط
+            // استدعاء دالة السيرفر الأمنية (RPC) لطلب النقاط وحساب فرق الوقت
             const { data, error } = await supabaseClient.rpc('claim_faucet_points', { reward_points: REWARD_POINTS });
 
             if (error) {
-                alert("حدث خطأ غير متوقع.");
+                alert("حدث خطأ غير متوقع أثناء الاتصال بقاعدة البيانات.");
                 claimBtn.disabled = false;
                 claimBtn.innerText = "اضغط للمطالبة 💰";
                 return;
@@ -138,7 +141,7 @@
             countdownInterval = setInterval(() => {
                 seconds--;
                 
-                // تحويل الثواني إلى شكل دقيقة:ثانية (04:32 مثلاً)
+                // تحويل الثواني المتبقية إلى شكل مريح للعين (04:32 مثلاً)
                 const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
                 const secs = (seconds % 60).toString().padStart(2, '0');
                 timerText.innerText = `${mins}:${secs}`;

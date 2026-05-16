@@ -1,265 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Offer Wall | Enterprise Earnings Platform</title>
-    <!-- Supabase JS Library -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تنفيذ العروض - جلب تلقائي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- jQuery for JSON handling (preserved from original) -->
+    <!-- نحتاج مكتبة jQuery لمعالجة طلب الـ JSON بسهولة كما في مثال CPAGrip -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <style>
-        /* ---------- RESET & BASE - Corporate Dark Mode | Strict | Minimal ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0A0C10;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, 'Helvetica Neue', sans-serif;
-            color: #E8EDF2;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            min-height: 100vh;
-        }
-
-        /* Professional scrollbar - minimal & strict */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #14171C;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #2C3038;
-            border-radius: 0px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3F444E;
-        }
-
-        /* Navigation - strict enterprise bar */
-        .navbar {
-            background-color: #0D0F13;
-            border-bottom: 1px solid #1E2128;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #F0F3F8;
-        }
-        .logo-accent {
-            color: #3B82F6;
-        }
-        .dashboard-link {
-            color: #9CA3AF;
-            text-decoration: none;
-            font-size: 0.8rem;
-            letter-spacing: 0.3px;
-            transition: color 0.2s ease;
-        }
-        .dashboard-link:hover {
-            color: #3B82F6;
-        }
-
-        /* Main container */
-        .offers-container {
-            max-width: 1024px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
-        /* Header section */
-        .page-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .page-title {
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #F0F3F8;
-        }
-        .page-title-accent {
-            color: #3B82F6;
-        }
-        .page-subtitle {
-            color: #9CA3AF;
-            font-size: 0.85rem;
-        }
-
-        /* Offers grid - responsive corporate cards */
-        .offers-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.25rem;
-        }
-
-        /* Corporate offer card - rigid geometry, no rounded corners */
-        .offer-card {
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: border-color 0.2s ease;
-        }
-        .offer-card:hover {
-            border-color: #3B82F6;
-        }
-        .offer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 0.75rem;
-            flex-wrap: wrap;
-        }
-        .offer-title {
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1.4;
-            color: #F0F3F8;
-            flex: 1;
-        }
-        .points-badge {
-            background-color: rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            padding: 0.25rem 0.75rem;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #3B82F6;
-            white-space: nowrap;
-        }
-        .offer-description {
-            color: #6B7280;
-            font-size: 0.75rem;
-            margin-bottom: 1.25rem;
-            line-height: 1.5;
-        }
-        .claim-btn {
-            background-color: #3B82F6;
-            border: none;
-            color: white;
-            font-weight: 600;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            padding: 0.7rem;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background-color 0.2s ease;
-            text-align: center;
-            text-decoration: none;
-            display: block;
-        }
-        .claim-btn:hover {
-            background-color: #2563EB;
-        }
-
-        /* Loading & empty states */
-        .loading-message, .empty-message {
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 2.5rem;
-            text-align: center;
-            color: #6B7280;
-            font-size: 0.9rem;
-        }
-        .error-message {
-            color: #EF4444;
-        }
-
-        /* No border radius anywhere - strict corporate geometry */
-        .navbar, .offer-card, .points-badge, .claim-btn, .loading-message, .empty-message {
-            border-radius: 0px;
-        }
-
-        /* Responsive adjustments - mobile perfection */
-        @media (min-width: 640px) {
-            .offers-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1.5rem;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .navbar {
-                padding: 0.85rem 1rem;
-            }
-            .logo {
-                font-size: 1rem;
-            }
-            .offers-container {
-                padding: 1rem;
-            }
-            .page-title {
-                font-size: 1.35rem;
-            }
-            .offer-card {
-                padding: 1.25rem;
-            }
-            .offer-title {
-                font-size: 0.9rem;
-            }
-            .points-badge {
-                font-size: 0.65rem;
-                padding: 0.2rem 0.6rem;
-            }
-        }
-
-        /* Accessibility focus outlines */
-        .claim-btn:focus-visible, .dashboard-link:focus-visible {
-            outline: 2px solid #3B82F6;
-            outline-offset: 2px;
-        }
-    </style>
 </head>
-<body>
+<body class="bg-gray-900 text-white min-h-screen">
 
-    <!-- Navigation Bar (original structure preserved) -->
-    <nav class="navbar">
-        <div class="logo"><span class="logo-accent">OFFER</span> WALL</div>
-        <a href="dashboard.html" class="dashboard-link">← DASHBOARD</a>
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-green-400">قسم العروض المباشرة</h1>
+        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white">العودة للوحة التحكم</a>
     </nav>
 
-    <div class="offers-container">
-        <div class="page-header">
-            <h1 class="page-title"><span class="page-title-accent">EXCLUSIVE</span> OFFERS</h1>
-            <p class="page-subtitle">Complete offers below to earn points instantly</p>
-        </div>
+    <div class="max-w-4xl mx-auto p-6">
+        <header class="mb-8 text-center">
+            <h2 class="text-3xl font-bold mb-2">عروض مختارة لك</h2>
+            <p class="text-gray-400">أكمل العروض أدناه للحصول على النقاط فوراً</p>
+        </header>
 
-        <!-- Offers container -->
-        <div id="offersContainer" class="offers-grid">
-            <div class="loading-message">LOADING BEST OFFERS FOR YOUR REGION...</div>
+        <!-- حاوية العروض -->
+        <div id="offersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- رسالة تحميل مؤقتة -->
+            <div class="text-center col-span-full py-10 text-gray-500">جاري جلب أفضل العروض لبلدك...</div>
         </div>
     </div>
 
     <script>
-        // --------------------------------------------------------------
-        // !!! ABSOLUTELY NO FUNCTIONAL CHANGES - ORIGINAL LOGIC PRESERVED !!!
-        // Only visual redesign (CSS). All Supabase auth, CPAGrip API,
-        // jQuery JSON handling, and offer rendering remain identical.
-        // --------------------------------------------------------------
-        
-        // Supabase configuration
+        // --- 1. إعدادات سوبابيز ---
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loadCPAGripOffers() {
-            // Verify user is logged in
+            // التأكد من تسجيل دخول المستخدم للحصول على الـ ID
             const { data: { user } } = await supabaseClient.auth.getUser();
 
             if (!user) {
@@ -269,53 +46,46 @@
 
             const container = $('#offersContainer');
             
-            // CPAGrip feed URL with dynamic tracking_id (user ID)
+            // رابط التغذية الخاص بك مع إضافة tracking_id ديناميكياً
+            // استخدمنا الـ Public Key كما هو موصى به للـ Client-side
             const api_url = `https://www.cpagrip.com/common/offer_feed_json.php?user_id=1862167&pubkey=027b211e5bc0d0a72610c88b01c69675&tracking_id=${user.id}`;
 
             $.getJSON(api_url, function(data) {
-                container.empty();
+                container.empty(); // مسح رسالة التحميل
 
                 if (data.offers && data.offers.length > 0) {
                     $.each(data.offers, function(i, offer) {
-                        // Calculate points based on payout (payout * 700)
+                        // حساب نقاط تقريبي (مثلاً الـ Payout مضروب في 1000)
+                        // يمكنك تعديل المعادلة حسب رغبتك
                         const points = Math.floor(offer.payout * 700);
 
                         const card = `
-                            <div class="offer-card">
+                            <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-green-500 transition group flex flex-col justify-between">
                                 <div>
-                                    <div class="offer-header">
-                                        <h3 class="offer-title">${escapeHtml(offer.title)}</h3>
-                                        <span class="points-badge">+${points} POINTS</span>
+                                    <div class="flex justify-between items-start mb-4">
+                                        <h3 class="text-lg font-bold leading-tight">${offer.title}</h3>
+                                        <span class="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap mr-2">
+                                            +${points} نقطة
+                                        </span>
                                     </div>
-                                    <p class="offer-description">${escapeHtml(offer.description || 'Complete this offer to earn points instantly.')}</p>
+                                    <p class="text-gray-400 text-xs mb-6">${offer.description}</p>
                                 </div>
-                                <a href="${offer.offerlink}" target="_blank" class="claim-btn">
-                                    CLAIM REWARD →
+                                <a href="${offer.offerlink}" target="_blank" class="block w-full bg-green-500 group-hover:bg-green-600 text-white text-center py-2 rounded font-bold transition">
+                                    احصل على المكافأة
                                 </a>
                             </div>
                         `;
                         container.append(card);
                     });
                 } else {
-                    container.html('<div class="empty-message">⚠️ No offers available for your region at this time.</div>');
+                    container.html('<p class="text-center col-span-full text-red-400">نأسف، لا توجد عروض متاحة لبلدك حالياً.</p>');
                 }
             }).fail(function() {
-                container.html('<div class="empty-message error-message">⚠️ Connection error. Please refresh the page.</div>');
+                container.html('<p class="text-center col-span-full text-red-400">خطأ في الاتصال بالسيرفر، يرجى تحديث الصفحة.</p>');
             });
         }
 
-        // Simple XSS protection helper (preserves original text safely)
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        // Initialize on page load
+        // تشغيل الدالة عند تحميل الصفحة
         $(document).ready(function() {
             loadCPAGripOffers();
         });

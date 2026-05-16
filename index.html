@@ -1,240 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Enterprise Access | Earnings Platform</title>
-    <!-- Supabase JS Library (only external dependency) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - منصة الأرباح</title>
+    <!-- Tailwind CSS للتميم الاحترافي -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <meta name="mylead-verification" content="86b7f6ebb08197a43756fa3aaf9ebc01">
-    <style>
-        /* ---------- RESET & BASE - Corporate Dark Mode | Strict | Minimal ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0A0C10;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, 'Helvetica Neue', sans-serif;
-            color: #E8EDF2;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Professional scrollbar - minimal & strict */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #14171C;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #2C3038;
-            border-radius: 0px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3F444E;
-        }
-
-        /* Main container - corporate centered card */
-        .auth-container {
-            width: 100%;
-            max-width: 480px;
-            margin: 1.5rem;
-            padding: 0;
-        }
-
-        /* Corporate card - rigid geometry, no rounded corners, strict borders */
-        .corporate-card {
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 2rem 1.75rem;
-        }
-
-        /* Typography - enterprise formal */
-        .auth-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.2px;
-            text-align: center;
-            margin-bottom: 1.75rem;
-            color: #F0F3F8;
-        }
-        .auth-title-accent {
-            color: #3B82F6;
-        }
-
-        /* Form elements - strict corporate styling (no rounded edges) */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        .form-label {
-            display: block;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #9CA3AF;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        .form-input {
-            width: 100%;
-            background-color: #050608;
-            border: 1px solid #2C303A;
-            padding: 0.75rem 1rem;
-            color: #E5E9F0;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: border-color 0.2s ease;
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: #3B82F6;
-        }
-        .form-input::placeholder {
-            color: #4B5563;
-            font-size: 0.8rem;
-        }
-
-        /* Submit button - strict, no gradients, simple hover */
-        .submit-btn {
-            width: 100%;
-            background-color: #3B82F6;
-            border: none;
-            color: white;
-            font-weight: 600;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            padding: 0.85rem;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background-color 0.2s ease;
-            margin-top: 0.5rem;
-        }
-        .submit-btn:hover {
-            background-color: #2563EB;
-        }
-
-        /* Toggle button - subtle corporate link style */
-        .toggle-auth {
-            background: none;
-            border: none;
-            color: #9CA3AF;
-            font-size: 0.75rem;
-            letter-spacing: 0.3px;
-            cursor: pointer;
-            font-family: inherit;
-            transition: color 0.2s ease;
-            margin-top: 1.25rem;
-            width: 100%;
-            text-align: center;
-            padding: 0.5rem;
-        }
-        .toggle-auth:hover {
-            color: #3B82F6;
-        }
-
-        /* Hidden utility class (preserved original functionality) */
-        .hidden-field {
-            display: none;
-        }
-
-        /* Accessibility focus outlines */
-        .form-input:focus-visible, .submit-btn:focus-visible, .toggle-auth:focus-visible {
-            outline: 2px solid #3B82F6;
-            outline-offset: 2px;
-        }
-
-        /* No border radius anywhere - strict corporate geometry */
-        .corporate-card, .form-input, .submit-btn {
-            border-radius: 0px;
-        }
-
-        /* Responsive adjustments - mobile perfection */
-        @media (max-width: 560px) {
-            .auth-container {
-                margin: 1rem;
-            }
-            .corporate-card {
-                padding: 1.5rem 1.25rem;
-            }
-            .auth-title {
-                font-size: 1.3rem;
-                margin-bottom: 1.5rem;
-            }
-            .form-input {
-                padding: 0.65rem 0.9rem;
-            }
-            .submit-btn {
-                padding: 0.7rem;
-            }
-        }
-
-        @media (min-width: 768px) {
-            .corporate-card {
-                padding: 2.25rem 2rem;
-            }
-        }
-
-        /* Simple divider line (optional refinement) */
-        .divider-light {
-            height: 1px;
-            background-color: #1F222A;
-            margin: 0.5rem 0 0 0;
-        }
-    </style>
 </head>
-<body>
-    <div class="auth-container">
-        <div class="corporate-card">
-            <h2 id="authTitle" class="auth-title"><span class="auth-title-accent">SIGN</span> IN</h2>
-            
-            <form id="authForm">
-                <!-- Username field - toggles visibility based on signup mode (original logic preserved) -->
-                <div id="usernameField" class="form-group hidden-field">
-                    <label class="form-label">USERNAME</label>
-                    <input type="text" id="username" class="form-input" autocomplete="off">
-                </div>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
-                <div class="form-group">
-                    <label class="form-label">EMAIL ADDRESS</label>
-                    <input type="email" id="email" required class="form-input" autocomplete="email">
-                </div>
+    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h2 id="authTitle" class="text-2xl font-bold mb-6 text-center text-green-400">تسجيل الدخول</h2>
+        
+        <form id="authForm" class="space-y-4">
+            <div id="usernameField" class="hidden">
+                <label class="block text-sm mb-1">اسم المستخدم</label>
+                <input type="text" id="username" class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label">PASSWORD</label>
-                    <input type="password" id="password" required class="form-input" autocomplete="current-password">
-                </div>
+            <div>
+                <label class="block text-sm mb-1">البريد الإلكتروني</label>
+                <input type="email" id="email" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
+            </div>
 
-                <button type="submit" id="submitBtn" class="submit-btn">LOGIN</button>
-            </form>
+            <div>
+                <label class="block text-sm mb-1">كلمة المرور</label>
+                <input type="password" id="password" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
+            </div>
 
-            <button id="toggleAuth" class="toggle-auth">No account? Create new account</button>
+            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded transition">دخول</button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <button id="toggleAuth" class="text-sm text-gray-400 hover:text-white">ليس لديك حساب؟ إنشاء حساب جديد</button>
         </div>
     </div>
 
     <script>
-        // --------------------------------------------------------------
-        // !!! ABSOLUTELY NO FUNCTIONAL CHANGES - ORIGINAL LOGIC PRESERVED !!!
-        // Only visual redesign (CSS). All Supabase authentication logic,
-        // signup/signin flow, toggling, and redirects remain identical.
-        // --------------------------------------------------------------
-        
-        // Supabase configuration (exactly as provided)
-        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        // --- 1. إعدادات سوبابيز (حط بياناتك هنا) ---
+        // js/supabase-config.js
+const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // DOM elements
+        // --- 2. عناصر الصفحة ---
         const authForm = document.getElementById('authForm');
         const toggleBtn = document.getElementById('toggleAuth');
         const usernameField = document.getElementById('usernameField');
@@ -243,23 +57,16 @@
 
         let isSignUp = false;
 
-        // Toggle between Login and Signup (original logic)
+        // --- 3. منطق التبديل بين الدخول والتسجيل ---
         toggleBtn.onclick = () => {
             isSignUp = !isSignUp;
-            authTitle.innerText = isSignUp ? "CREATE ACCOUNT" : "SIGN IN";
-            submitBtn.innerText = isSignUp ? "REGISTER" : "LOGIN";
-            
-            // Toggle username field visibility
-            if (isSignUp) {
-                usernameField.classList.remove('hidden-field');
-            } else {
-                usernameField.classList.add('hidden-field');
-            }
-            
-            toggleBtn.innerText = isSignUp ? "Already have an account? Sign in" : "No account? Create new account";
+            authTitle.innerText = isSignUp ? "إنشاء حساب جديد" : "تسجيل الدخول";
+            submitBtn.innerText = isSignUp ? "تسجيل" : "دخول";
+            usernameField.classList.toggle('hidden');
+            toggleBtn.innerText = isSignUp ? "لديك حساب بالفعل؟ سجل دخولك" : "ليس لديك حساب؟ إنشاء حساب جديد";
         };
 
-        // Form submission handler (original authentication flow)
+        // --- 4. معالجة الفورم ---
         authForm.onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -268,27 +75,27 @@
 
             try {
                 if (isSignUp) {
-                    // Sign up new user with metadata (original implementation)
+                    // إنشاء حساب جديد
                     const { data, error } = await supabaseClient.auth.signUp({
                         email,
                         password,
                         options: { 
                             data: { display_name: username },
-                            emailRedirectTo: window.location.origin
+                            emailRedirectTo: window.location.origin // يرجعك للموقع بعد التفعيل
                         }
                     });
                     if (error) throw error;
-                    alert("Registration successful! Please check your email to verify your account.");
+                    alert("تم التسجيل بنجاح! افحص بريدك لتفعيل الحساب.");
                 } else {
-                    // Sign in existing user (original implementation)
+                    // تسجيل دخول
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     
-                    // Redirect to dashboard after successful login
-                    window.location.href = 'dashboard.html';
+                    // تحويل لصفحة الداشبورد بعد النجاح
+                    window.location.href = 'dashboard.html'; 
                 }
             } catch (err) {
-                alert("Error: " + err.message);
+                alert("حدث خطأ: " + err.message);
             }
         };
     </script>

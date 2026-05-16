@@ -1,341 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Enterprise Dashboard | Earnings Platform</title>
-    <!-- Supabase JS Library (only external dependency) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - أرباحي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* ---------- RESET & BASE (Corporate Dark Mode - Strict & Minimal) ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0A0C10;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, 'Helvetica Neue', sans-serif;
-            color: #E8EDF2;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Professional scrollbar - clean & minimal */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #14171C;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #2C3038;
-            border-radius: 0;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3F444E;
-        }
-
-        /* Container system - corporate grid spacing */
-        .app-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
-        /* ----- NAVBAR (Strict enterprise style) ----- */
-        .navbar {
-            background-color: #0D0F13;
-            border-bottom: 1px solid #1E2128;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            color: #FFFFFF;
-            background: none;
-            border: none;
-        }
-        .logo-accent {
-            color: #3B82F6;
-            font-weight: 700;
-        }
-        .logout-btn {
-            background-color: transparent;
-            border: 1px solid #2C2F36;
-            color: #9CA3AF;
-            padding: 0.4rem 1rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            letter-spacing: 0.3px;
-        }
-        .logout-btn:hover {
-            border-color: #EF4444;
-            color: #EF4444;
-            background-color: rgba(239, 68, 68, 0.05);
-        }
-
-        /* ----- MAIN CARD (Points Overview) - Minimalist & Strict ----- */
-        .points-card {
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .greeting {
-            font-size: 1.5rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: #F0F3F8;
-        }
-        .greeting-name {
-            color: #3B82F6;
-            font-weight: 600;
-        }
-        .points-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #6B7280;
-            margin-bottom: 1.25rem;
-            font-weight: 400;
-        }
-        .points-badge {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 0.5rem;
-            background-color: #050608;
-            border: 1px solid #2D3748;
-            padding: 0.75rem 2rem;
-        }
-        .points-value {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #3B82F6;
-            line-height: 1;
-            letter-spacing: -0.02em;
-        }
-        .points-unit {
-            font-size: 0.9rem;
-            color: #6B7280;
-            font-weight: 400;
-        }
-
-        /* ----- ACTION GRID (Corporate enterprise modules) - Fully responsive mobile-first ----- */
-        .actions-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        /* Corporate action button / card (strict, no rounded corners on hover nonsense, very formal) */
-        .action-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            background-color: #111318;
-            border: 1px solid #24272F;
-            padding: 1.5rem 1rem;
-            text-decoration: none;
-            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-            text-align: center;
-        }
-        .action-card:hover {
-            background-color: #161A22;
-            border-color: #3B82F6;
-            transform: translateY(-1px);
-        }
-        .action-icon {
-            font-size: 1.8rem;
-            filter: grayscale(0.2);
-        }
-        .action-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #E5E9F0;
-            letter-spacing: 0.01em;
-        }
-        .action-desc {
-            font-size: 0.7rem;
-            color: #6C727F;
-            font-weight: 400;
-            margin-top: 0.1rem;
-        }
-
-        /* Subtle color accents for action cards - only border on hover, otherwise monochrome */
-        .action-card[data-type="faucet"]:hover .action-title { color: #3B82F6; }
-        .action-card[data-type="ptc"]:hover .action-title { color: #3B82F6; }
-        .action-card[data-type="offers"]:hover .action-title { color: #3B82F6; }
-        .action-card[data-type="shortlinks"]:hover .action-title { color: #3B82F6; }
-        .action-card[data-type="withdraw"]:hover .action-title { color: #3B82F6; }
-
-        /* Animation for points update (minimal pulse) */
-        @keyframes corporatePulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; text-shadow: 0 0 1px #3B82F6; }
-            100% { opacity: 1; }
-        }
-        .points-pulse {
-            animation: corporatePulse 0.4s ease-in-out;
-        }
-
-        /* Responsive breakpoints - strict enterprise mobile adaptation */
-        @media (min-width: 640px) {
-            .app-container {
-                padding: 2rem;
-            }
-            .actions-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1.25rem;
-            }
-            .points-value {
-                font-size: 3.5rem;
-            }
-            .greeting {
-                font-size: 1.75rem;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .actions-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 1.5rem;
-            }
-            .points-card {
-                padding: 2.5rem;
-            }
-            .action-card {
-                padding: 1.75rem 1rem;
-            }
-        }
-
-        /* Edge cases for very small devices (<=380px) */
-        @media (max-width: 480px) {
-            .app-container {
-                padding: 1rem;
-            }
-            .points-card {
-                padding: 1.5rem 1rem;
-            }
-            .points-value {
-                font-size: 2.5rem;
-            }
-            .action-card {
-                padding: 1.2rem 0.8rem;
-            }
-            .action-title {
-                font-size: 0.9rem;
-            }
-            .navbar {
-                padding: 0.85rem 1rem;
-            }
-        }
-
-        /* additional strictness: no rounded corners, no shadows, straight edges */
-        .points-card, .action-card, .navbar, .logout-btn, .points-badge {
-            border-radius: 0px;
-        }
-        /* but keep minimal polish, enterprise doesn't mean ugly — just rigid geometry */
-        .points-badge {
-            border-radius: 0px;
-        }
-
-        /* focus styles for accessibility (corporate compliance) */
-        .logout-btn:focus-visible, .action-card:focus-visible {
-            outline: 2px solid #3B82F6;
-            outline-offset: 2px;
-        }
-
-        /* simple divider / micro details */
-        hr {
-            border: none;
-            border-top: 1px solid #1E2128;
-            margin: 0;
-        }
-    </style>
 </head>
-<body>
+<body class="bg-gray-900 text-white min-h-screen">
 
-    <!-- Navigation Bar (Enterprise Dark) - no changes to structure or IDs -->
-    <nav class="navbar">
-        <div class="logo"><span class="logo-accent">EARN</span>PLATFORM</div>
-        <button id="logoutBtn" class="logout-btn">SIGN OUT</button>
+    <!-- شريط التنقل (Navbar) -->
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-green-400">منصة الأرباح</h1>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-4 py-1 rounded text-sm transition">تسجيل خروج</button>
     </nav>
 
-    <div class="app-container">
-        <!-- Welcome Card & Points Overview (original content, only visual redesign) -->
-        <div class="points-card">
-            <div class="greeting">Welcome, <span id="userName" class="greeting-name">...</span></div>
-            <div class="points-label">CURRENT POINTS BALANCE</div>
-            <div class="points-badge">
-                <span id="userPoints" class="points-value">0</span>
-                <span class="points-unit">POINTS</span>
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- رسالة الترحيب والكرت الأساسي -->
+        <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700 text-center mb-6">
+            <h2 class="text-2xl mb-2">أهلاً بك، <span id="userName" class="font-bold text-green-400">...</span></h2>
+            <p class="text-gray-400 mb-6">رصيدك الحالي من النقاط</p>
+            
+            <div class="inline-block bg-gray-900 px-8 py-4 rounded-full border-2 border-green-500">
+                <span id="userPoints" class="text-5xl font-black text-green-500">0</span>
+                <span class="text-sm text-gray-400">نقطة</span>
             </div>
         </div>
 
-        <!-- Action Modules Grid (5 original links, untouched HTML attributes, only CSS restructured) -->
-        <div class="actions-grid">
-            <!-- Faucet (original text & href) -->
-            <a href="faucet.html" class="action-card" data-type="faucet">
-                <span class="action-icon">🚰</span>
-                <span class="action-title">FAUCET (every 5 min)</span>
-                <span class="action-desc">Claim daily drops</span>
+        <!-- أزرار التنقل السريع المعدلة (3 أزرار متناسقة) -->
+        <!-- أزرار التنقل السريع المطورة (5 أزرار متناسقة ومقاومة للشاشات) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- 1. صنبور الفوست (جديد) -->
+            <a href="faucet.html" class="bg-teal-600 hover:bg-teal-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
+                <span>🚰</span> صنبور الفوست (كل 5 دقايق)
             </a>
-            <!-- PTC Ads -->
-            <a href="ptc.html" class="action-card" data-type="ptc">
-                <span class="action-icon">👁️</span>
-                <span class="action-title">PTC ADS</span>
-                <span class="action-desc">Earn per view</span>
+
+            <!-- 2. مشاهدة الإعلانات PTC (جديد) -->
+            <a href="ptc.html" class="bg-indigo-600 hover:bg-indigo-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
+                <span>👁️</span> مشاهدة إعلانات PTC
             </a>
-            <!-- Offers -->
-            <a href="offers.html" class="action-card" data-type="offers">
-                <span class="action-icon">🚀</span>
-                <span class="action-title">COMPLETE OFFERS</span>
-                <span class="action-desc">High value tasks</span>
+
+            <!-- 3. تنفيذ العروض (القديم) -->
+            <a href="offers.html" class="bg-blue-600 hover:bg-blue-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
+                <span>🚀</span> تنفيذ العروض
             </a>
-            <!-- Shortlinks -->
-            <a href="shortlinks.html" class="action-card" data-type="shortlinks">
-                <span class="action-icon">🔗</span>
-                <span class="action-title">SHORTLINKS (50 links)</span>
-                <span class="action-desc">Daily earnings</span>
+            
+            <!-- 4. الروابط المختصرة (القديم) -->
+            <a href="shortlinks.html" class="bg-orange-600 hover:bg-orange-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
+                <span>🔗</span> الروابط المختصرة (50 رابط)
             </a>
-            <!-- Withdraw -->
-            <a href="withdraw.html" class="action-card" data-type="withdraw">
-                <span class="action-icon">💰</span>
-                <span class="action-title">WITHDRAW FUNDS</span>
-                <span class="action-desc">Request payout</span>
+
+            <!-- 5. سحب الأرباح (القديم) -->
+            <a href="withdraw.html" class="bg-purple-600 hover:bg-purple-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg md:col-span-1 sm:col-span-2">
+                <span>💰</span> سحب الأرباح
             </a>
         </div>
     </div>
 
     <script>
-        // --------------------------------------------------------------
-        // !!! ABSOLUTELY NO FUNCTIONAL CHANGES — KEEP ORIGINAL LOGIC !!!
-        // Only visual redesign, all supabase logic, redirects, and event handlers remain identical
-        // --------------------------------------------------------------
-        
-        // --- 1. Supabase Configuration (unchanged) ---
+        // --- 1. إعدادات سوبابيز ---
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- 2. Authentication & Data Fetching (exact original logic) ---
+        // --- 2. التحقق من الدخول وجلب البيانات ---
         async function initDashboard() {
             const { data: { user } } = await supabaseClient.auth.getUser();
 
@@ -344,8 +73,7 @@
                 return;
             }
 
-            // Set display name (original fallback)
-            document.getElementById('userName').innerText = user.user_metadata.display_name || "Champion";
+            document.getElementById('userName').innerText = user.user_metadata.display_name || "يا بطل";
 
             const { data: profile } = await supabaseClient
                 .from('profiles')
@@ -360,7 +88,7 @@
             subscribeToPoints(user.id);
         }
 
-        // --- 3. Real-time points subscription (original implementation) ---
+        // --- 3. وظيفة التحديث اللحظي ---
         function subscribeToPoints(userId) {
             supabaseClient
                 .channel('realtime:points')
@@ -370,24 +98,19 @@
                     table: 'profiles',
                     filter: `id=eq.${userId}` 
                 }, payload => {
-                    const pointsSpan = document.getElementById('userPoints');
-                    if (payload.new.points !== undefined) {
-                        pointsSpan.innerText = payload.new.points;
-                        // Add minimal visual feedback (original had animate-pulse, we adapt with class)
-                        pointsSpan.classList.add('points-pulse');
-                        setTimeout(() => pointsSpan.classList.remove('points-pulse'), 400);
-                    }
+                    document.getElementById('userPoints').innerText = payload.new.points;
+                    document.getElementById('userPoints').classList.add('animate-pulse');
+                    setTimeout(() => document.getElementById('userPoints').classList.remove('animate-pulse'), 1000);
                 })
                 .subscribe();
         }
 
-        // --- 4. Logout functionality (exactly as original, redirects to auth.html) ---
+        // --- 4. تسجيل الخروج ---
         document.getElementById('logoutBtn').onclick = async () => {
             await supabaseClient.auth.signOut();
             window.location.href = 'auth.html';
         };
 
-        // Initialize dashboard
         initDashboard();
     </script>
 </body>

@@ -1,287 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Withdraw Funds | Enterprise Platform</title>
-    <!-- Supabase JS Library (only external dependency) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحب الأرباح - منصتي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* ---------- RESET & BASE - Corporate Dark Mode | Strict | Minimal ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0A0C10;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, 'Helvetica Neue', sans-serif;
-            color: #E8EDF2;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Professional scrollbar - minimal & strict */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #14171C;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #2C3038;
-            border-radius: 0px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3F444E;
-        }
-
-        /* Main container - corporate centered layout */
-        .withdraw-container {
-            max-width: 560px;
-            margin: 0 auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 1.5rem;
-        }
-
-        /* Card styles - rigid, no rounded corners, strict borders */
-        .corporate-card {
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 1.75rem;
-        }
-
-        /* Typography - enterprise formal */
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.2px;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            color: #F0F3F8;
-        }
-        .page-title-accent {
-            color: #3B82F6;
-        }
-
-        /* Points display module */
-        .points-module {
-            text-align: center;
-            margin-bottom: 1.75rem;
-        }
-        .points-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #6B7280;
-            font-weight: 400;
-            margin-bottom: 0.5rem;
-        }
-        .points-value {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #3B82F6;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-        }
-        .points-hint {
-            font-size: 0.7rem;
-            color: #10B981;
-            margin-top: 0.5rem;
-            font-weight: 400;
-            letter-spacing: 0.3px;
-        }
-
-        /* Form elements - strict corporate styling (no rounded edges, minimal) */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        .form-label {
-            display: block;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #9CA3AF;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        .form-input, .form-select {
-            width: 100%;
-            background-color: #050608;
-            border: 1px solid #2C303A;
-            padding: 0.75rem 1rem;
-            color: #E5E9F0;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: border-color 0.2s ease;
-        }
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: #3B82F6;
-        }
-        .form-input::placeholder {
-            color: #4B5563;
-            font-size: 0.8rem;
-        }
-
-        /* Submit button - strict, no gradients, simple hover */
-        .submit-btn {
-            width: 100%;
-            background-color: #3B82F6;
-            border: none;
-            color: white;
-            font-weight: 600;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            padding: 0.9rem;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background-color 0.2s ease;
-            margin-top: 0.5rem;
-        }
-        .submit-btn:hover {
-            background-color: #2563EB;
-        }
-        .submit-btn:disabled {
-            background-color: #374151;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        /* Message area */
-        .message-area {
-            margin-top: 1.25rem;
-            text-align: center;
-            font-size: 0.8rem;
-            font-weight: 500;
-            padding: 0.5rem;
-        }
-        .message-error {
-            color: #EF4444;
-        }
-        .message-success {
-            color: #10B981;
-        }
-
-        /* Minimal divider */
-        .divider {
-            height: 1px;
-            background-color: #1F222A;
-            margin: 1rem 0;
-        }
-
-        /* Responsive adjustments - mobile perfection */
-        @media (max-width: 480px) {
-            .withdraw-container {
-                padding: 1rem;
-                justify-content: flex-start;
-                padding-top: 2rem;
-                padding-bottom: 2rem;
-            }
-            .corporate-card {
-                padding: 1.25rem;
-            }
-            .page-title {
-                font-size: 1.3rem;
-                margin-bottom: 1.25rem;
-            }
-            .points-value {
-                font-size: 2.5rem;
-            }
-            .form-input, .form-select {
-                padding: 0.65rem 0.9rem;
-            }
-            .submit-btn {
-                padding: 0.75rem;
-            }
-        }
-
-        @media (min-width: 640px) {
-            .withdraw-container {
-                padding: 2rem;
-            }
-            .corporate-card {
-                padding: 2rem;
-            }
-            .points-value {
-                font-size: 3.5rem;
-            }
-        }
-
-        /* Accessibility focus outlines */
-        .form-input:focus-visible, .form-select:focus-visible, .submit-btn:focus-visible {
-            outline: 2px solid #3B82F6;
-            outline-offset: 1px;
-        }
-
-        /* No border radius anywhere - strict corporate geometry */
-        .corporate-card, .form-input, .form-select, .submit-btn {
-            border-radius: 0px;
-        }
-    </style>
 </head>
-<body>
-    <div class="withdraw-container">
-        <div class="corporate-card">
-            <h1 class="page-title"><span class="page-title-accent">WITHDRAW</span> FUNDS</h1>
+<body class="bg-gray-900 text-white min-h-screen">
 
-            <!-- Points Balance Display (original structure preserved) -->
-            <div class="points-module">
-                <div class="points-label">CURRENT BALANCE</div>
-                <div id="userPoints" class="points-value">0</div>
-                <div class="points-hint">READY FOR WITHDRAWAL</div>
+    <div class="max-w-md mx-auto p-6">
+        <h2 class="text-2xl font-bold mb-6 text-center text-green-400">سحب الأرباح</h2>
+
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6 text-center">
+            <p class="text-gray-400 text-sm">رصيدك الحالي</p>
+            <div id="userPoints" class="text-4xl font-black text-white my-2">0</div>
+            <p class="text-green-500 text-xs font-bold">نقاط جاهزة للسحب</p>
+        </div>
+
+        <form id="withdrawForm" class="space-y-4">
+            <div>
+                <label class="block text-sm mb-2 text-gray-400">اختر العملة (على FaucetPay)</label>
+                <select id="cryptoCurrency" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-green-500">
+                    <option value="LTC">Litecoin (LTC) - أسرع وسيله</option>
+                    <option value="USDT">Tether (USDT)</option>
+                    <option value="BTC">Bitcoin (BTC)</option>
+                </select>
             </div>
 
-            <!-- Withdrawal Form - original fields and IDs intact -->
-            <form id="withdrawForm">
-                <div class="form-group">
-                    <label class="form-label">SELECT CRYPTO (FaucetPay)</label>
-                    <select id="cryptoCurrency" class="form-select" required>
-                        <option value="LTC">Litecoin (LTC) - Fastest</option>
-                        <option value="USDT">Tether (USDT)</option>
-                        <option value="BTC">Bitcoin (BTC)</option>
-                    </select>
-                </div>
+            <div>
+                <label class="block text-sm mb-2 text-gray-400">كمية النقاط للسحب</label>
+                <input type="number" id="withdrawAmount" min="1000" placeholder="أقل كمية 1000 نقطة" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white" required>
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label">POINTS TO WITHDRAW</label>
-                    <input type="number" id="withdrawAmount" min="1000" placeholder="Minimum 1000 points" class="form-input" required>
-                </div>
+            <div>
+                <label class="block text-sm mb-2 text-gray-400">بريد FaucetPay الإلكتروني</label>
+                <input type="email" id="walletAddress" placeholder="email@example.com" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white" required>
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label">FAUCETPAY EMAIL</label>
-                    <input type="email" id="walletAddress" placeholder="email@example.com" class="form-input" required>
-                </div>
+            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition shadow-lg">
+                تقديم طلب السحب
+            </button>
+        </form>
 
-                <button type="submit" id="submitBtn" class="submit-btn">SUBMIT REQUEST</button>
-            </form>
-
-            <div id="msg" class="message-area"></div>
-        </div>
+        <p id="msg" class="mt-4 text-center text-sm font-semibold"></p>
     </div>
 
     <script>
-        // --------------------------------------------------------------
-        // !!! ABSOLUTELY NO FUNCTIONAL CHANGES - ORIGINAL LOGIC PRESERVED !!!
-        // Only visual redesign (CSS). All Supabase logic, RPC calls,
-        // validations, and error handling remain identical to original.
-        // --------------------------------------------------------------
-        
-        // Supabase configuration (exactly as provided)
+        // إعدادات سوبابيز الخاصة بك
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentPoints = 0;
 
-        // Fetch user balance (original implementation)
+        // جلب رصيد المستخدم وعرضه
         async function fetchBalance() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) {
@@ -301,42 +74,42 @@
             }
         }
 
-        // Withdrawal request handler (original logic preserved)
+        // معالجة طلب السحب بأمان
         document.getElementById('withdrawForm').onsubmit = async (e) => {
             e.preventDefault();
             
             const msgEl = document.getElementById('msg');
             const btn = document.getElementById('submitBtn');
             
-            msgEl.innerText = "";
-            msgEl.className = "message-area";
+            msgEl.innerText = ""; // تهيئة الرسالة
             
             const amount = parseInt(document.getElementById('withdrawAmount').value);
             const crypto = document.getElementById('cryptoCurrency').value;
             const wallet = document.getElementById('walletAddress').value;
 
-            // 1. Basic validation (original thresholds)
+            // 1. فحص الحماية البرمجية الأساسية قبل مراسلة السيرفر
             if (isNaN(amount) || amount < 1000) {
-                msgEl.innerText = "❌ Minimum withdrawal amount is 1000 points.";
-                msgEl.className = "message-area message-error";
+                msgEl.innerText = "❌ عذراً، الحد الأدنى للسحب هو 1000 نقطة.";
+                msgEl.className = "text-red-500 text-center mt-4";
                 return;
             }
 
             if (amount > currentPoints) {
-                msgEl.innerText = `❌ Insufficient balance. Your current balance is ${currentPoints} points.`;
-                msgEl.className = "message-area message-error";
+                msgEl.innerText = `❌ رصيدك غير كافٍ. رصيدك الحالي هو ${currentPoints} نقطة فقط.`;
+                msgEl.className = "text-red-500 text-center mt-4";
                 return;
             }
 
-            // Disable button to prevent double submission
+            // قفل الزرار لمنع الضغط المتكرر أثناء تنفيذ العملية
             btn.disabled = true;
-            btn.innerText = 'PROCESSING...';
+            btn.innerText = 'جاري المعالجة وأمان العملية...';
 
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
-                if (!user) throw new Error("No active user session found.");
+                if (!user) throw new Error("لم يتم العثور على جلسة مستخدم نشطة.");
 
-                // 2. Security first: Call the deduct_points RPC function
+                // 2. الأمان أولاً: استدعاء دالة الخصم من قاعدة البيانات مباشرة
+                // الدالة ترجع خطأ تلقائياً إذا حاول التلاعب بالبيانات بفضل شرط الـ IF بالـ SQL الخاص بك
                 const { error: deductError } = await supabaseClient.rpc('deduct_points', { 
                     _user_id: user.id, 
                     _amount: amount 
@@ -346,7 +119,7 @@
                     throw new Error(deductError.message);
                 }
 
-                // 3. Record withdrawal request after successful deduction
+                // 3. التسجيل ثانياً: طالما نجح الخصم بنجاح، نقوم الآن بتسجيل الطلب بأمان تام
                 const { error: insertError } = await supabaseClient.from('withdrawals').insert({
                     user_id: user.id,
                     amount_points: amount,
@@ -356,27 +129,28 @@
                 });
 
                 if (insertError) {
-                    // Fallback safety: if deduction succeeded but logging fails
-                    throw new Error("Withdrawal request could not be recorded. Please contact support.");
+                    // حماية احتياطية نادرة جداً: لو نجح الخصم وفشل التسجيل لأي سبب في شبكة قاعدة البيانات
+                    throw new Error("حدثت مشكلة أثناء تسجيل الطلب، يرجى التواصل مع الدعم الفني.");
                 }
 
-                // Success
-                msgEl.innerText = "🎉 Withdrawal request submitted successfully! It will be reviewed and sent within 24 hours.";
-                msgEl.className = "message-area message-success";
-                document.getElementById('withdrawForm').reset();
+                // نجاح العملية بالكامل
+                msgEl.innerText = "🎉 تم تقديم طلبك بنجاح! سيتم مراجعته وإرساله لمحفظتك خلال 24 ساعة.";
+                msgEl.className = "text-green-500 text-center mt-4";
+                document.getElementById('withdrawForm').reset(); // تصفير الحقول المتواجدة بالفروم
                 
-                await fetchBalance(); // Update displayed balance immediately
+                await fetchBalance(); // تحديث رقم الرصيد في الشاشة فوراً بعد الخصم
 
             } catch (err) {
-                msgEl.innerText = "Error: " + err.message;
-                msgEl.className = "message-area message-error";
+                msgEl.innerText = "خطأ: " + err.message;
+                msgEl.className = "text-red-500 text-center mt-4";
             } finally {
+                // إعادة تفعيل الزرار
                 btn.disabled = false;
-                btn.innerText = 'SUBMIT REQUEST';
+                btn.innerText = 'تقديم طلب السحب';
             }
         };
 
-        // Initialize page
+        // تهيئة الصفحة عند الدخول أول مرة
         initPage();
         
         async function initPage() {

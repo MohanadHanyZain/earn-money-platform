@@ -1,119 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Faucet | Enterprise Earnings Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صنبور الفوست - منصة الأرباح</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background-color: #0A0C10;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
-            color: #E8EDF2;
-            line-height: 1.5;
-            min-height: 100vh;
-        }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #14171C; }
-        ::-webkit-scrollbar-thumb { background: #2C3038; border-radius: 0; }
-        .navbar {
-            background-color: #0D0F13;
-            border-bottom: 1px solid #1E2128;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .navbar-left { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
-        .back-link { color: #9CA3AF; text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
-        .back-link:hover { color: #3B82F6; }
-        .page-title { font-size: 1.25rem; font-weight: 600; color: #F0F3F8; }
-        .page-title-accent { color: #3B82F6; }
-        .points-badge {
-            background-color: #050608;
-            border: 1px solid #2C303A;
-            padding: 0.4rem 1rem;
-            font-size: 0.8rem;
-        }
-        .points-badge span { color: #3B82F6; font-weight: 700; }
-        .faucet-container { max-width: 768px; margin: 0 auto; padding: 1.5rem; }
-        .ad-banner {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1.75rem;
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 0.5rem;
-        }
-        .corporate-card {
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 2rem 1.75rem;
-            text-align: center;
-        }
-        .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #F0F3F8; }
-        .card-subtitle { color: #9CA3AF; font-size: 0.85rem; margin-bottom: 1.5rem; }
-        .reward-highlight { color: #3B82F6; font-weight: 700; }
-        .claim-btn {
-            background-color: #3B82F6;
-            border: none;
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            padding: 1rem 2rem;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background-color 0.2s;
-            width: 100%;
-            max-width: 280px;
-            margin: 0 auto;
-        }
-        .claim-btn:hover:not(:disabled) { background-color: #2563EB; }
-        .claim-btn:disabled { background-color: #2C303A; cursor: not-allowed; opacity: 0.7; }
-        .cooldown-container { margin-top: 1rem; color: #F59E0B; font-weight: 600; font-size: 0.9rem; }
-        .cooldown-timer { font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; }
-        .hidden { display: none; }
-        .text-center { text-align: center; }
-        .navbar, .corporate-card, .claim-btn, .points-badge, .ad-banner { border-radius: 0; }
-        @media (max-width: 640px) {
-            .navbar { padding: 0.85rem 1rem; }
-            .navbar-left { gap: 1rem; }
-            .page-title { font-size: 1rem; }
-            .points-badge { font-size: 0.7rem; padding: 0.3rem 0.8rem; }
-            .faucet-container { padding: 1rem; }
-            .corporate-card { padding: 1.5rem 1.25rem; }
-            .card-title { font-size: 1.25rem; }
-            .claim-btn { padding: 0.8rem 1.5rem; font-size: 1rem; max-width: 100%; }
-            .ad-banner { padding: 0.25rem; }
-        }
-        @media (min-width: 768px) { .corporate-card { padding: 2.25rem; } }
-        .claim-btn:focus-visible, .back-link:focus-visible { outline: 2px solid #3B82F6; outline-offset: 2px; }
-    </style>
 </head>
-<body>
+<body class="bg-gray-900 text-white min-h-screen">
 
-    <nav class="navbar">
-        <div class="navbar-left">
-            <a href="dashboard.html" class="back-link">← BACK TO DASHBOARD</a>
-            <h1 class="page-title"><span class="page-title-accent">FAUCET</span> REWARDS</h1>
+    <!-- شريط التنقل (Navbar) -->
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ العودة للرئيسية</a>
+            <h1 class="text-xl font-bold text-teal-400">🚰 صنبور الفوست</h1>
         </div>
-        <div class="points-badge">
-            BALANCE: <span id="topPoints">0</span> POINTS
+        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700 text-sm">
+            رصيدك: <span id="topPoints" class="text-green-400 font-bold">0</span> نقطة
         </div>
     </nav>
 
-    <div class="faucet-container">
-        <div class="ad-banner">
-            <div style="text-align: center;">
+    <div class="max-w-2xl mx-auto p-6 mt-10">
+        
+        <!-- إعلان البنر 468x60 العلوي الخاص بك -->
+        <div class="flex justify-center mb-6 overflow-hidden max-w-full">
+            <div class="bg-gray-800 p-1 text-center rounded-lg border border-gray-700">
                 <script>
                     atOptions = {
                         'key' : '3332ff0dea9a4b480c786186c2112ea9',
@@ -127,61 +38,88 @@
             </div>
         </div>
 
-        <div class="corporate-card">
-            <h2 class="card-title">CLAIM FREE REWARD</h2>
-            <p class="card-subtitle">Earn <span class="reward-highlight">3 POINTS</span> every 5 minutes — zero effort</p>
-            <div class="text-center">
-                <button id="claimBtn" onclick="runFaucetClaim()" class="claim-btn">
-                    CLAIM REWARD 💰
+        <!-- كرت المطالبة الرئيسي -->
+        <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700 text-center">
+            <h2 class="text-2xl font-bold mb-2 text-teal-400">طالب بمكافأتك المجانية!</h2>
+            <p class="text-gray-400 mb-6">يمكنك الحصول على <span class="text-green-400 font-bold">3 نقاط</span> كل 5 دقائق بدون مجهود.</p>
+
+            <!-- زر الكابتشا والمطالبة -->
+            <div class="space-y-6 flex flex-col items-center justify-center">
+                
+                <!-- زر المطالبة الفعلي -->
+                <button id="claimBtn" onclick="runFaucetClaim()" class="w-full sm:w-64 bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-8 rounded-lg text-xl shadow-lg transition transform hover:scale-105 disabled:bg-gray-700 disabled:text-gray-500 disabled:scale-100">
+                    اضغط للمطالبة 💰
                 </button>
-                <div id="cooldownContainer" class="cooldown-container hidden">
-                    ⏱️ NEXT CLAIM IN: <span id="cooldownTimer" class="cooldown-timer">05:00</span>
+
+                <!-- عداد الانتظار (يظهر فقط إذا كان الزر مقفلاً) -->
+                <div id="cooldownContainer" class="hidden text-orange-400 font-bold text-lg animate-pulse">
+                    ⏱️ يمكنك المطالبة مجدداً بعد: <span id="cooldownTimer">05:00</span>
                 </div>
             </div>
         </div>
+
     </div>
 
-    <!-- Social Bar Script - ORIGINAL, COMPLETELY UNTOUCHED -->
+    <!-- كود الـ Social Bar الحقيقي الخاص بك لربح تلقائي من مجرد فتح الصفحة -->
     <script src="https://pl29465244.effectivecpmnetwork.com/d6/a7/90/d6a790a2620fed6eed0f53885cbb2f75.js"></script>
 
     <script>
+        // --- إعدادات سوبابيز الخاصة بك والمحفوظة لدينا ---
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let countdownInterval;
-        const REWARD_POINTS = 3;
+        const REWARD_POINTS = 3; // الجائزة 3 نقاط
 
         async function initFaucet() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) return window.location.href = 'auth.html';
+
+            // جلب رصيد النقاط الحالي وعرضه بالأعلى
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', user.id).single();
             if (profile) document.getElementById('topPoints').innerText = profile.points;
+
+            // التحقق هل المستخدم لديه حظر انتظار حالي (Cooldown) مخزن في السيرفر
             const { data: claimData } = await supabaseClient.from('faucet_claims').select('last_claimed_at').eq('user_id', user.id).single();
+            
             if (claimData) {
                 const lastClaimTime = new Date(claimData.last_claimed_at).getTime();
                 const timePassed = Math.floor((Date.now() - lastClaimTime) / 1000);
-                const cooldownDuration = 300;
-                if (timePassed < cooldownDuration) startCooldown(cooldownDuration - timePassed);
+                const cooldownDuration = 300; // 5 دقائق تعادل 300 ثانية
+
+                if (timePassed < cooldownDuration) {
+                    startCooldown(cooldownDuration - timePassed);
+                }
             }
         }
 
+        // --- دالة تشغيل المطالبة والاتصال بالسيرفر ---
         async function runFaucetClaim() {
             const claimBtn = document.getElementById('claimBtn');
             claimBtn.disabled = true;
-            claimBtn.innerText = "VERIFYING... ⏳";
+            claimBtn.innerText = "جاري التحقق... ⏳";
+
+            // استدعاء دالة السيرفر الأمنية (RPC) لطلب النقاط وحساب فرق الوقت
             const { data, error } = await supabaseClient.rpc('claim_faucet_points', { reward_points: REWARD_POINTS });
+
             if (error) {
-                alert("Unexpected database error occurred.");
+                alert("حدث خطأ غير متوقع أثناء الاتصال بقاعدة البيانات.");
                 claimBtn.disabled = false;
-                claimBtn.innerText = "CLAIM REWARD 💰";
+                claimBtn.innerText = "اضغط للمطالبة 💰";
                 return;
             }
-            const result = data[0];
+
+            // قراءة رد السيرفر الذكي
+            const result = data[0]; 
+
             if (result.success) {
                 alert(result.message);
+                // تحديث رصيد النقاط المعروض في الأعلى فوراً
                 const topPointsEl = document.getElementById('topPoints');
                 topPointsEl.innerText = parseInt(topPointsEl.innerText) + REWARD_POINTS;
+                
+                // بدء عداد الخمس دقائق
                 startCooldown(result.next_claim_in);
             } else {
                 alert(result.message);
@@ -189,23 +127,29 @@
             }
         }
 
+        // --- دالة تشغيل العداد التنازلي بصيغة الدقائق والثواني دقيقة ---
         function startCooldown(seconds) {
             const claimBtn = document.getElementById('claimBtn');
             const container = document.getElementById('cooldownContainer');
             const timerText = document.getElementById('cooldownTimer');
+
             claimBtn.disabled = true;
-            claimBtn.innerText = "LOCKED 🔒";
+            claimBtn.innerText = "مغلق 🔒";
             container.classList.remove('hidden');
+
             clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
                 seconds--;
+                
+                // تحويل الثواني المتبقية إلى شكل مريح للعين (04:32 مثلاً)
                 const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
                 const secs = (seconds % 60).toString().padStart(2, '0');
                 timerText.innerText = `${mins}:${secs}`;
+
                 if (seconds <= 0) {
                     clearInterval(countdownInterval);
                     claimBtn.disabled = false;
-                    claimBtn.innerText = "CLAIM REWARD 💰";
+                    claimBtn.innerText = "اضغط للمطالبة 💰";
                     container.classList.add('hidden');
                 }
             }, 1000);

@@ -1,47 +1,301 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاهدة الإعلانات - منصة الأرباح</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PTC Ads | Enterprise Earnings Platform</title>
+    <!-- Supabase JS Library (only external dependency) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-gray-900 text-white min-h-screen relative">
+    <style>
+        /* ---------- RESET & BASE - Corporate Dark Mode | Strict | Minimal ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <!-- شريط التنقل (Navbar) -->
-    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ العودة للرئيسية</a>
-            <h1 class="text-xl font-bold text-indigo-400">مشاهدة إعلانات PTC</h1>
+        body {
+            background-color: #0A0C10;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, 'Helvetica Neue', sans-serif;
+            color: #E8EDF2;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Professional scrollbar - minimal & strict */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #14171C;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2C3038;
+            border-radius: 0px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3F444E;
+        }
+
+        /* Navigation - strict enterprise bar */
+        .navbar {
+            background-color: #0D0F13;
+            border-bottom: 1px solid #1E2128;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .back-link {
+            color: #9CA3AF;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 0.3px;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: #3B82F6;
+        }
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #F0F3F8;
+        }
+        .page-title-accent {
+            color: #3B82F6;
+        }
+        .points-badge {
+            background-color: #050608;
+            border: 1px solid #2C303A;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+        }
+        .points-badge span {
+            color: #3B82F6;
+            font-weight: 700;
+        }
+
+        /* Main container */
+        .ptc-container {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Section header */
+        .section-header {
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #9CA3AF;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Ads grid - responsive corporate cards */
+        .ads-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        /* Corporate ad card - rigid geometry, no rounded corners */
+        .ad-card {
+            background-color: #0F1117;
+            border: 1px solid #1F222A;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .ad-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #F0F3F8;
+            margin-bottom: 0.5rem;
+        }
+        .ad-meta {
+            font-size: 0.75rem;
+            color: #6B7280;
+            margin-bottom: 1rem;
+            letter-spacing: 0.3px;
+        }
+        .ad-meta span {
+            color: #3B82F6;
+            font-weight: 600;
+        }
+        .watch-btn {
+            background-color: #3B82F6;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 0.7rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s ease;
+            width: 100%;
+        }
+        .watch-btn:hover {
+            background-color: #2563EB;
+        }
+
+        /* Empty state message */
+        .empty-message {
+            background-color: #0F1117;
+            border: 1px solid #1F222A;
+            padding: 2rem;
+            text-align: center;
+            color: #6B7280;
+            font-size: 0.9rem;
+        }
+
+        /* Modal overlay - fullscreen corporate ad viewer */
+        .ad-modal {
+            position: fixed;
+            inset: 0;
+            background-color: #0A0C10;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        .hidden {
+            display: none;
+        }
+        .modal-header {
+            background-color: #0D0F13;
+            border-bottom: 1px solid #1E2128;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .modal-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #3B82F6;
+            text-transform: uppercase;
+        }
+        .countdown-badge {
+            background-color: #050608;
+            border: 1px solid #EF4444;
+            padding: 0.5rem 1.25rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #EF4444;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .ad-iframe {
+            width: 100%;
+            flex: 1;
+            background-color: white;
+            border: none;
+        }
+
+        /* No border radius anywhere - strict corporate geometry */
+        .navbar, .ad-card, .watch-btn, .points-badge, .empty-message, .modal-header, .countdown-badge {
+            border-radius: 0px;
+        }
+
+        /* Responsive adjustments - mobile perfection */
+        @media (min-width: 640px) {
+            .ads-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.25rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .navbar {
+                padding: 0.85rem 1rem;
+            }
+            .navbar-left {
+                gap: 1rem;
+            }
+            .page-title {
+                font-size: 1rem;
+            }
+            .points-badge {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.8rem;
+            }
+            .ptc-container {
+                padding: 1rem;
+            }
+            .ad-card {
+                padding: 1.25rem;
+            }
+            .modal-header {
+                padding: 0.75rem 1rem;
+            }
+            .countdown-badge {
+                font-size: 1rem;
+                padding: 0.35rem 0.9rem;
+            }
+        }
+
+        /* Accessibility focus outlines */
+        .watch-btn:focus-visible, .back-link:focus-visible {
+            outline: 2px solid #3B82F6;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar (original structure preserved) -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="dashboard.html" class="back-link">← BACK TO DASHBOARD</a>
+            <h1 class="page-title"><span class="page-title-accent">PTC</span> ADS</h1>
         </div>
-        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700 text-sm">
-            رصيدك: <span id="topPoints" class="text-green-400 font-bold">0</span> نقطة
+        <div class="points-badge">
+            BALANCE: <span id="topPoints">0</span> POINTS
         </div>
     </nav>
 
-    <!-- شاشة الإعلان المنبثقة الكاملة (تظهر فوق الموقع لضمان عمل العداد) -->
-    <div id="adModal" class="hidden fixed inset-0 bg-gray-950 z-50 flex flex-col">
-        <!-- بار العداد العلوي -->
-        <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center px-8">
-            <div class="text-lg font-bold text-indigo-400">شاهد الإعلان لكسب النقاط</div>
-            <div class="bg-gray-800 px-6 py-2 rounded-full text-2xl font-black text-red-500">
-                انتظر: <span id="countdown">30</span> ثانية
-            </div>
+    <div class="ptc-container">
+        <div class="section-header">AVAILABLE ADS (24H CYCLE)</div>
+        <div id="adsList" class="ads-grid">
+            <div class="empty-message">LOADING ADS...</div>
         </div>
-        <!-- مكان عرض الإعلان المباشر داخل موقعك -->
-        <iframe id="adFrame" class="w-full flex-1 bg-white" src=""></iframe>
     </div>
 
-    <div class="max-w-4xl mx-auto p-6">
-        <!-- مكان عرض الإعلانات المتاحة -->
-        <h2 class="text-xl font-bold mb-4 text-gray-400">الإعلانات المتاحة اليوم:</h2>
-        <div id="adsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="p-6 bg-gray-800 rounded-lg text-center text-gray-500 col-span-full">جاري تحميل الإعلانات...</div>
+    <!-- Fullscreen Ad Modal (original structure preserved) -->
+    <div id="adModal" class="ad-modal hidden">
+        <div class="modal-header">
+            <div class="modal-title">WATCH AD TO EARN POINTS</div>
+            <div class="countdown-badge">
+                WAIT: <span id="countdown">30</span> SEC
+            </div>
         </div>
+        <iframe id="adFrame" class="ad-iframe" src=""></iframe>
     </div>
 
     <script>
+        // --------------------------------------------------------------
+        // !!! ABSOLUTELY NO FUNCTIONAL CHANGES - ORIGINAL LOGIC PRESERVED !!!
+        // Only visual redesign (CSS). All Supabase logic, RPC calls,
+        // modal handling, countdown, and reward system remain identical.
+        // --------------------------------------------------------------
+        
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -58,11 +312,11 @@
                 return;
             }
 
-            // 1. جلب وعرض النقاط
+            // 1. Fetch and display points balance
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', user.id).single();
             if (profile) document.getElementById('topPoints').innerText = profile.points;
 
-            // 2. جلب تاريخ إعلانات آخر 24 ساعة للمستخدم
+            // 2. Get user's ad history from last 24 hours
             const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             const { data: history } = await supabaseClient
                 .from('ptc_history')
@@ -72,7 +326,7 @@
 
             const viewedAdIds = history ? history.map(h => h.ad_id) : [];
 
-            // 3. جلب الإعلانات وفلترتها
+            // 3. Fetch all ads and filter available ones
             const { data: ads, error } = await supabaseClient.from('ptc_ads').select('*');
             const adsListDiv = document.getElementById('adsList');
             adsListDiv.innerHTML = '';
@@ -80,37 +334,37 @@
             const availableAds = ads ? ads.filter(ad => !viewedAdIds.includes(ad.id)) : [];
 
             if (error || availableAds.length === 0) {
-                adsListDiv.innerHTML = `<div class="p-6 bg-gray-800 rounded-lg text-center text-gray-500 col-span-full">رائع! لقد شاهدت كل إعلانات اليوم، عد لاحقاً.</div>`;
+                adsListDiv.innerHTML = `<div class="empty-message">✅ All ads completed for today. Please check back tomorrow.</div>`;
                 return;
             }
 
             availableAds.forEach(ad => {
                 adsListDiv.innerHTML += `
-                    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 flex flex-col justify-between shadow-lg">
+                    <div class="ad-card">
                         <div>
-                            <h3 class="text-lg font-bold text-white mb-2">${ad.title}</h3>
-                            <p class="text-sm text-gray-400 mb-4">⏱️ المدة: ${ad.duration} ثانية | 💰 الجائزة: ${ad.reward_points} نقاط</p>
+                            <div class="ad-title">${ad.title}</div>
+                            <div class="ad-meta">⏱️ DURATION: ${ad.duration} SEC | 💰 REWARD: <span>${ad.reward_points}</span> POINTS</div>
                         </div>
-                        <button onclick="watchAd('${ad.adsterra_url}', ${ad.duration}, ${ad.reward_points}, ${ad.id})" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded transition text-center">
-                            شاهد الآن 🚀
+                        <button onclick="watchAd('${ad.adsterra_url}', ${ad.duration}, ${ad.reward_points}, ${ad.id})" class="watch-btn">
+                            WATCH NOW 🚀
                         </button>
                     </div>
                 `;
             });
         }
 
-        // --- دالة تشغيل الإعلان بالداخل ---
+        // Launch ad with modal and countdown
         function watchAd(url, duration, reward, adId) {
             timeLeft = duration;
             currentAdReward = reward;
             currentAdId = adId;
 
-            // شحن الـ iframe برابط إعلان Adsterra وفتح الشاشة الكبيرة
+            // Load ad iframe and show modal
             document.getElementById('adFrame').src = url;
             document.getElementById('adModal').classList.remove('hidden');
             document.getElementById('countdown').innerText = timeLeft;
 
-            // بدء العداد المضمون (لأننا في نفس الصفحة ولم نغادرها!)
+            // Start countdown timer
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -119,13 +373,13 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     document.getElementById('adModal').classList.add('hidden');
-                    document.getElementById('adFrame').src = ""; // تفريغ الإعلان
+                    document.getElementById('adFrame').src = "";
                     giveReward();
                 }
             }, 1000);
         }
 
-        // --- منح الجائزة وتحديث قاعدة البيانات وتحديث الواجهة تلقائياً ---
+        // Grant reward and update database
         async function giveReward() {
             const { error } = await supabaseClient.rpc('claim_ptc_reward', { 
                 ad_id_param: currentAdId, 
@@ -133,10 +387,10 @@
             });
 
             if (!error) {
-                alert(`🎯 مبروك! تمت إضافة +${currentAdReward} نقاط واحتساب الإعلان كمشاهد.`);
-                initPTC(); // لإعادة قراءة البيانات وإخفاء الإعلان المشاهد فوراً!
+                alert(`🎯 SUCCESS! +${currentAdReward} points added.`);
+                initPTC(); // Refresh the list to hide viewed ad
             } else {
-                alert("حدث خطأ أثناء ترحيل النقاط للرصيد.");
+                alert("Error processing reward. Please contact support.");
             }
         }
 

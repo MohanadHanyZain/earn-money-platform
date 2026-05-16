@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - منصة الأرباح</title>
+    <!-- Tailwind CSS للتميم الاحترافي -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <meta name="mylead-verification" content="86b7f6ebb08197a43756fa3aaf9ebc01">
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h2 id="authTitle" class="text-2xl font-bold mb-6 text-center text-green-400">تسجيل الدخول</h2>
+        
+        <form id="authForm" class="space-y-4">
+            <div id="usernameField" class="hidden">
+                <label class="block text-sm mb-1">اسم المستخدم</label>
+                <input type="text" id="username" class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
+            </div>
+
+            <div>
+                <label class="block text-sm mb-1">البريد الإلكتروني</label>
+                <input type="email" id="email" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
+            </div>
+
+            <div>
+                <label class="block text-sm mb-1">كلمة المرور</label>
+                <input type="password" id="password" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded transition">دخول</button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <button id="toggleAuth" class="text-sm text-gray-400 hover:text-white">ليس لديك حساب؟ إنشاء حساب جديد</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. إعدادات سوبابيز (حط بياناتك هنا) ---
+        // js/supabase-config.js
+const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- 2. عناصر الصفحة ---
+        const authForm = document.getElementById('authForm');
+        const toggleBtn = document.getElementById('toggleAuth');
+        const usernameField = document.getElementById('usernameField');
+        const authTitle = document.getElementById('authTitle');
+        const submitBtn = document.getElementById('submitBtn');
+
+        let isSignUp = false;
+
+        // --- 3. منطق التبديل بين الدخول والتسجيل ---
+        toggleBtn.onclick = () => {
+            isSignUp = !isSignUp;
+            authTitle.innerText = isSignUp ? "إنشاء حساب جديد" : "تسجيل الدخول";
+            submitBtn.innerText = isSignUp ? "تسجيل" : "دخول";
+            usernameField.classList.toggle('hidden');
+            toggleBtn.innerText = isSignUp ? "لديك حساب بالفعل؟ سجل دخولك" : "ليس لديك حساب؟ إنشاء حساب جديد";
+        };
+
+        // --- 4. معالجة الفورم ---
+        authForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+
+            try {
+                if (isSignUp) {
+                    // إنشاء حساب جديد
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email,
+                        password,
+                        options: { 
+                            data: { display_name: username },
+                            emailRedirectTo: window.location.origin // يرجعك للموقع بعد التفعيل
+                        }
+                    });
+                    if (error) throw error;
+                    alert("تم التسجيل بنجاح! افحص بريدك لتفعيل الحساب.");
+                } else {
+                    // تسجيل دخول
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    
+                    // تحويل لصفحة الداشبورد بعد النجاح
+                    window.location.href = 'dashboard.html'; 
+                }
+            } catch (err) {
+                alert("حدث خطأ: " + err.message);
+            }
+        };
+    </script>
+</body>
+</html>

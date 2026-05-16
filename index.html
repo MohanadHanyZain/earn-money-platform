@@ -3,101 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - منصة الأرباح</title>
-    <!-- Tailwind CSS للتميم الاحترافي -->
+    <title>منصة الأرباح - اجمع العملات الرقمية مجاناً</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- مكتبة Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <meta name="mylead-verification" content="86b7f6ebb08197a43756fa3aaf9ebc01">
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+<body class="bg-gray-900 text-white min-h-screen font-sans">
 
-    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 id="authTitle" class="text-2xl font-bold mb-6 text-center text-green-400">تسجيل الدخول</h2>
-        
-        <form id="authForm" class="space-y-4">
-            <div id="usernameField" class="hidden">
-                <label class="block text-sm mb-1">اسم المستخدم</label>
-                <input type="text" id="username" class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
-            </div>
+    <header class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center px-6 shadow-md">
+        <h1 class="text-2xl font-black text-green-400 tracking-wide">🪙 منصة الأرباح</h1>
+        <a href="auth.html" class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-2 rounded-lg transition transform hover:scale-105 shadow-lg">
+            تسجيل الدخول / التسجيل
+        </a>
+    </header>
 
-            <div>
-                <label class="block text-sm mb-1">البريد الإلكتروني</label>
-                <input type="email" id="email" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
-            </div>
-
-            <div>
-                <label class="block text-sm mb-1">كلمة المرور</label>
-                <input type="password" id="password" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
-            </div>
-
-            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded transition">دخول</button>
-        </form>
-
-        <div class="mt-4 text-center">
-            <button id="toggleAuth" class="text-sm text-gray-400 hover:text-white">ليس لديك حساب؟ إنشاء حساب جديد</button>
+    <main class="max-w-4xl mx-auto p-6 text-center mt-16 space-y-8">
+        <div class="space-y-4">
+            <span class="bg-gray-800 border border-gray-700 text-green-400 text-xs font-bold px-4 py-1.5 rounded-full shadow-inner">
+                ⚡ الطريقة الأسرع لجمع العملات الرقمية مجاناً
+            </span>
+            <h2 class="text-4xl md:text-6xl font-black leading-tight text-transparent bg-clip-text bg-gradient-to-r bg-white to-gray-400">
+                اربح العملات الرقمية <br><span class="text-green-400">بسهولة ومن دون رأس مال</span>
+            </h2>
+            <p class="text-gray-400 max-w-xl mx-auto text-base md:text-lg">
+                انضم إلى آلاف المستخدمين وابدأ بجني النقاط وتحويلها إلى عملات حقيقية مباشرة إلى محفظتك على FaucetPay عبر الصنبور ومشاهدة الإعلانات.
+            </p>
         </div>
-    </div>
 
-    <script>
-        // --- 1. إعدادات سوبابيز (حط بياناتك هنا) ---
-        // js/supabase-config.js
-const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        <div>
+            <a href="auth.html" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-xl font-black px-12 py-4 rounded-xl transition transform hover:scale-105 shadow-xl">
+                🚀 ابدأ جني الأرباح الآن مجاناً
+            </a>
+        </div>
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 pt-12 border-t border-gray-800">
+            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 text-center shadow-lg">
+                <div class="text-3xl mb-3">🚰</div>
+                <h3 class="text-lg font-bold text-white mb-2">صنبور متجدد</h3>
+                <p class="text-gray-400 text-sm">طالب بمكافأتك المجانية من النقاط بضغطة زر واحدة كل 5 دقائق بدون توقف.</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 text-center shadow-lg">
+                <div class="text-3xl mb-3">👁️</div>
+                <h3 class="text-lg font-bold text-white mb-2">إعلانات PTC</h3>
+                <p class="text-gray-400 text-sm">شاهد إعلانات قصيرة لثوانٍ معدودة واكسب نقاطاً إضافية تضاف لرصيدك فوراً.</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 text-center shadow-lg">
+                <div class="text-3xl mb-3">⚡</div>
+                <h3 class="text-lg font-bold text-white mb-2">سحب فوري وآمن</h3>
+                <p class="text-gray-400 text-sm">اسحب أرباحك مباشرة إلى FaucetPay بحد أدنى منخفض جداً (1000 نقطة فقط).</p>
+            </div>
+        </div>
+    </main>
 
-        // --- 2. عناصر الصفحة ---
-        const authForm = document.getElementById('authForm');
-        const toggleBtn = document.getElementById('toggleAuth');
-        const usernameField = document.getElementById('usernameField');
-        const authTitle = document.getElementById('authTitle');
-        const submitBtn = document.getElementById('submitBtn');
+    <footer class="bg-gray-900 border-t border-gray-800 p-6 text-center text-sm text-gray-500 mt-24">
+        <p class="mb-3">جميع الحقوق محفوظة © منصة الأرباح</p>
+        <div class="flex justify-center gap-6">
+            <a href="terms.html" class="hover:text-gray-300 transition">شروط الخدمة</a>
+            <a href="privacy.html" class="hover:text-gray-300 transition">سياسة الخصوصية</a>
+        </div>
+    </footer>
 
-        let isSignUp = false;
-
-        // --- 3. منطق التبديل بين الدخول والتسجيل ---
-        toggleBtn.onclick = () => {
-            isSignUp = !isSignUp;
-            authTitle.innerText = isSignUp ? "إنشاء حساب جديد" : "تسجيل الدخول";
-            submitBtn.innerText = isSignUp ? "تسجيل" : "دخول";
-            usernameField.classList.toggle('hidden');
-            toggleBtn.innerText = isSignUp ? "لديك حساب بالفعل؟ سجل دخولك" : "ليس لديك حساب؟ إنشاء حساب جديد";
-        };
-
-        // --- 4. معالجة الفورم ---
-        authForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const username = document.getElementById('username').value;
-
-            try {
-                if (isSignUp) {
-                    // إنشاء حساب جديد
-                    const { data, error } = await supabaseClient.auth.signUp({
-                        email,
-                        password,
-                        options: { 
-                            data: { display_name: username },
-                            emailRedirectTo: window.location.origin // يرجعك للموقع بعد التفعيل
-                        }
-                    });
-                    if (error) throw error;
-                    alert("تم التسجيل بنجاح! افحص بريدك لتفعيل الحساب.");
-                } else {
-                    // تسجيل دخول
-                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
-                    
-                    // تحويل لصفحة الداشبورد بعد النجاح
-                    window.location.href = 'dashboard.html'; 
-                }
-            } catch (err) {
-                alert("حدث خطأ: " + err.message);
-            }
-        };
-    </script>
 </body>
 </html>

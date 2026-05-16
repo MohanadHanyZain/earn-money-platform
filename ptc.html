@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشاهدة الإعلانات - منصة الأرباح</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <!-- شريط التنقل (Navbar) -->
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ العودة للرئيسية</a>
+            <h1 class="text-xl font-bold text-indigo-400">مشاهدة إعلانات PTC</h1>
+        </div>
+        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700 text-sm">
+            رصيدك: <span id="topPoints" class="text-green-400 font-bold">0</span> نقطة
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto p-6">
+        
+        <!-- العداد التنازلي الثابت (يظهر فقط عند بدء الإعلان) -->
+        <div id="timerContainer" class="hidden bg-gray-800 border-2 border-indigo-500 rounded-xl p-6 text-center mb-6 shadow-2xl animate-pulse">
+            <h3 class="text-xl font-bold mb-2 text-indigo-400">شاشتك الإعلانية مفتوحة الآن في نافذة جديدة!</h3>
+            <p class="text-gray-300 mb-4">يرجى الانتظار دون مغادرة هذه الصفحة لضمان احتساب النقاط.</p>
+            <div class="inline-block bg-gray-900 px-6 py-2 rounded-full text-3xl font-black text-red-500">
+                <span id="countdown">30</span> ثانية
+            </div>
+        </div>
+
+        <!-- مكان عرض الإعلانات المتاحة -->
+        <h2 class="text-xl font-bold mb-4 text-gray-400">الإعلانات المتاحة اليوم:</h2>
+        <div id="adsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- جاري تحميل الإعلانات بالجافاسكربت -->
+            <div class="p-6 bg-gray-800 rounded-lg text-center text-gray-500 col-span-full">جاري تحميل الإعلانات المتاحة...</div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. إعدادات سوبابيز الخاصة بك ---
+        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let timerInterval;
+        let timeLeft = 0;
+        let currentAdReward = 0;
+        let currentAdId = null;
+
+        // --- 2. التحقق من الدخول وجلب الإعلانات والنقاط ---
+        async function initPTC() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            // جلب وعرض نقاط المستخدم
+            const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', user.id).single();
+            if (profile) document.getElementById('topPoints').innerText = profile.points;
+
+            // جلب الإعلانات من الجدول
+            const { data: ads, error } = await supabaseClient.from('ptc_ads').select('*');
+            const adsListDiv = document.getElementById('adsList');
+            adsListDiv.innerHTML = '';
+
+            if (error || ads.length === 0) {
+                adsListDiv.innerHTML = `<div class="p-6 bg-gray-800 rounded-lg text-center text-gray-500 col-span-full">لا توجد إعلانات متاحة حالياً، عد لاحقاً!</div>`;
+                return;
+            }
+
+            // تكرار لعرض الإعلانات بستايل متناسق مع موقعك
+            ads.forEach(ad => {
+                adsListDiv.innerHTML += `
+                    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 flex flex-col justify-between shadow-lg" id="ad-card-${ad.id}">
+                        <div>
+                            <h3 class="text-lg font-bold text-white mb-2">${ad.title}</h3>
+                            <p class="text-sm text-gray-400 mb-4">⏱️ المدة: ${ad.duration} ثانية | 💰 الجائزة: ${ad.reward_points} نقاط</p>
+                        </div>
+                        <button onclick="watchAd('${ad.adsterra_url}', ${ad.duration}, ${ad.reward_points}, ${ad.id})" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded transition text-center">
+                            شاهد الآن 🚀
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 3. دالة بدء مشاهدة الإعلان وتشغيل العداد الذكي ---
+        function watchAd(url, duration, reward, adId) {
+            timeLeft = duration;
+            currentAdReward = reward;
+            currentAdId = adId;
+
+            // فتح رابط Adsterra المباشر في علامة تبويب جديدة
+            window.open(url, '_blank');
+
+            // إظهار صندوق العداد
+            const timerContainer = document.getElementById('timerContainer');
+            const countdownText = document.getElementById('countdown');
+            timerContainer.classList.remove('hidden');
+            countdownText.innerText = timeLeft;
+
+            // بدء مؤقت الـ 30 ثانية
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                // حماية: إذا غادر المستخدم الصفحة، العداد يتوقف تلقائياً
+                if (!document.hidden) {
+                    timeLeft--;
+                    countdownText.innerText = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        timerContainer.classList.add('hidden');
+                        giveReward();
+                    }
+                }
+            }, 1000);
+        }
+
+        // --- 4. دالة منح الجائزة وتحديث الرصيد فوراً ---
+        async function giveReward() {
+            // استدعاء دالة الـ RPC الآمنة في السيرفر
+            const { error } = await supabaseClient.rpc('add_user_points', { points_to_add: currentAdReward });
+
+            if (!error) {
+                alert(`🎯 مبروك! تمت إضافة +${currentAdReward} نقاط إلى رصيدك.`);
+                // إخفاء كارت الإعلان المشاهد لكي لا يكرره في نفس الجلسة
+                if(currentAdId) {
+                    const card = document.getElementById(`ad-card-${currentAdId}`);
+                    if(card) card.remove();
+                }
+                // تحديث النقاط بالأعلى
+                const currentPoints = parseInt(document.getElementById('topPoints').innerText);
+                document.getElementById('topPoints').innerText = currentPoints + currentAdReward;
+            } else {
+                alert("عذراً، حدث خطأ أثناء ترحيل النقاط.");
+            }
+        }
+
+        initPTC();
+    </script>
+</body>
+</html>

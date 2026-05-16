@@ -28,15 +28,30 @@
         </div>
 
         <!-- أزرار التنقل السريع المعدلة (3 أزرار متناسقة) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="offers.html" class="bg-blue-600 hover:bg-blue-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2">
+        <!-- أزرار التنقل السريع المطورة (5 أزرار متناسقة ومقاومة للشاشات) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- 1. صنبور الفوست (جديد) -->
+            <a href="faucet.html" class="bg-teal-600 hover:bg-teal-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
+                <span>🚰</span> صنبور الفوست (كل 5 دقايق)
+            </a>
+
+            <!-- 2. مشاهدة الإعلانات PTC (جديد) -->
+            <a href="ptc.html" class="bg-indigo-600 hover:bg-indigo-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
+                <span>👁️</span> مشاهدة إعلانات PTC
+            </a>
+
+            <!-- 3. تنفيذ العروض (القديم) -->
+            <a href="offers.html" class="bg-blue-600 hover:bg-blue-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
                 <span>🚀</span> تنفيذ العروض
             </a>
-            <!-- الزر الجديد للروابط المختصرة -->
-            <a href="shortlinks.html" class="bg-orange-600 hover:bg-orange-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2">
+            
+            <!-- 4. الروابط المختصرة (القديم) -->
+            <a href="shortlinks.html" class="bg-orange-600 hover:bg-orange-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
                 <span>🔗</span> الروابط المختصرة (50 رابط)
             </a>
-            <a href="withdraw.html" class="bg-purple-600 hover:bg-purple-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2">
+
+            <!-- 5. سحب الأرباح (القديم) -->
+            <a href="withdraw.html" class="bg-purple-600 hover:bg-purple-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg md:col-span-1 sm:col-span-2">
                 <span>💰</span> سحب الأرباح
             </a>
         </div>
@@ -54,7 +69,7 @@
             const { data: { user } } = await supabaseClient.auth.getUser();
 
             if (!user) {
-                window.location.href = 'auth.html';
+                window.location.href = 'index.html';
                 return;
             }
 

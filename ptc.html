@@ -38,7 +38,6 @@
     </div>
 
     <script>
-        // إعدادات سوبابيز الخاصة بك
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -47,7 +46,6 @@
         let activeAdId = null;
         let timerInterval = null;
 
-        // 1. التحقق من المستخدم وجلب رصيده الحالي
         async function checkUser() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) {
@@ -56,7 +54,6 @@
             }
             userId = user.id;
             
-            // جلب النقاط وعرضها بالشبكة
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', userId).single();
             if (profile) {
                 document.getElementById('userPoints').innerText = profile.points || 0;
@@ -65,13 +62,10 @@
             loadAvailableAds();
         }
 
-        // 2. جلب وفلترة الإعلانات التي لم يشاهدها المستخدم في آخر 24 ساعة
         async function loadAvailableAds() {
             try {
-                // جلب كل الإعلانات النشطة من جدول ptc_ads
                 const { data: allAds } = await supabaseClient.from('ptc_ads').select('*');
                 
-                // جلب تاريخ مشاهدات هذا المستخدم في آخر 24 ساعة (تم تعديل العمود هنا إلى created_at لتفادي الأخطاء)
                 const timeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
                 const { data: watchedAds } = await supabaseClient
                     .from('ptc_history')
@@ -85,7 +79,6 @@
                 const loadingText = document.getElementById('loadingText');
                 if (loadingText) loadingText.classList.add('hidden');
                 
-                // فلترة الإعلانات المتبقية
                 const availableAds = allAds ? allAds.filter(ad => !watchedIds.includes(ad.id)) : [];
 
                 if (availableAds.length === 0) {
@@ -93,29 +86,32 @@
                     return;
                 }
 
-                adsContainer.innerHTML = ''; // تنظيف الصندوق
+                adsContainer.innerHTML = ''; 
                 
-                // بناء الكروت الإعلانية بالـ DOM بطريقة آمنة تمنع الـ Form Submit والـ Reload
                 availableAds.forEach(ad => {
                     const card = document.createElement('div');
                     card.className = "bg-gray-800 p-5 rounded-xl border border-gray-700 flex justify-between items-center shadow-md";
                     
+                    // تحويل الزر إلى وسم رابط حقيقي <a> يحمل الخصائص القياسية المباشرة لمنع حظر المتصفح
                     card.innerHTML = `
                         <div>
                             <h3 class="font-bold text-white mb-1">${ad.title}</h3>
                             <p class="text-xs text-gray-400 mb-2">المدة: ${ad.duration} ثانية</p>
                             <div class="text-green-400 text-sm font-bold">💰 +${ad.reward_points} نقطة</div>
                         </div>
-                        <button type="button" class="watch-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md">
+                        <a href="${ad.url}" target="_blank" rel="noopener noreferrer" class="watch-link bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md inline-block text-center">
                             شاهد الآن 👁️
-                        </button>
+                        </a>
                     `;
 
-                    // ربط حدث الضغط برمجياً بالـ Event لمنع أي سلوك افتراضي يتسبب في الانتقال لصفحة الاندكس
-                    card.querySelector('.watch-btn').onclick = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        watchAd(ad.id, ad.url, ad.duration);
+                    // عند النقر على الرابط، يتم تشغيل العداد التنازلي في الصفحة دون إيقاف فتح الرابط
+                    card.querySelector('.watch-link').onclick = (e) => {
+                        if (activeAdId) {
+                            e.preventDefault(); // منع فتح الرابط إذا كان هناك إعلان آخر يعمل حالياً
+                            alert("يرجى إنهاء الإعلان الحالي أولاً!");
+                            return;
+                        }
+                        startTimer(ad.id, ad.duration);
                     };
 
                     adsContainer.appendChild(card);
@@ -126,30 +122,20 @@
             }
         }
 
-        // 3. الضغط على "شاهد الآن" -> فتح الإعلان في تبويب وتشغيل العداد بالموقع الرئيسي
-        function watchAd(adId, adUrl, duration) {
-            if (activeAdId) {
-                alert("يرجى إنهاء الإعلان الحالي أولاً!");
-                return;
-            }
-
+        // دالة تشغيل العداد المستقلة
+        function startTimer(adId, duration) {
             activeAdId = adId;
             
-            // فتح الرابط الذكي (Smart Link) في تبويب جديد مستقل بالكامل
-            window.open(adUrl, '_blank');
-
-            // إظهار صندوق العداد والتنبيه للمهتمين
             const activeAdSection = document.getElementById('activeAdSection');
             const timerEl = document.getElementById('countdownTimer');
             const confirmBtn = document.getElementById('confirmClaimBtn');
             
             activeAdSection.classList.remove('hidden');
-            confirmBtn.classList.add('hidden'); // إخفاء زر التأكيد في البداية
+            confirmBtn.classList.add('hidden'); 
             
             let timeLeft = duration;
             timerEl.innerText = timeLeft;
 
-            // تشغيل العداد التنازلي
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerEl.innerText = timeLeft;
@@ -157,12 +143,12 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     timerEl.innerText = "✓";
-                    confirmBtn.classList.remove('hidden'); // إظهار زر التأكيد عند النهاية
+                    confirmBtn.classList.remove('hidden'); 
                 }
             }, 1000);
         }
 
-        // 4. الضغط على زر "تأكيد المشاهدة" بعد انتهاء العداد لإضافة النقاط في السيرفر
+        // الضغط على زر التأكيد لإضافة النقاط
         document.getElementById('confirmClaimBtn').onclick = async (e) => {
             e.preventDefault();
             if (!activeAdId || !userId) return;
@@ -172,7 +158,6 @@
             confirmBtn.innerText = "جاري التأمين وإضافة النقاط... ⏳";
 
             try {
-                // استدعاء دالة الـ RPC الأمنية في سوبابيز (مع تحويل الـ ad_id لرقم ليتطابق مع الـ SQL)
                 const { error } = await supabaseClient.rpc('claim_ptc_reward', {
                     _user_id: userId,
                     _ad_id: parseInt(activeAdId)
@@ -182,17 +167,14 @@
 
                 alert("🎉 مبارك! تم التحقق من مشاهدتك بنجاح وإضافة النقاط لرصيدك.");
                 
-                // إعادة تهيئة واجهة العداد
                 clearInterval(timerInterval);
                 activeAdId = null;
                 document.getElementById('activeAdSection').classList.add('hidden');
                 
-                // تحديث البيانات على الشاشة فوراً
                 await checkUser();
 
             } catch (err) {
                 alert("خطأ: " + err.message);
-                // تفكيك قفل الإعلان لتسهيل المحاولة مجدداً في حال حدوث خطأ شبكة
                 clearInterval(timerInterval);
                 activeAdId = null;
                 document.getElementById('activeAdSection').classList.add('hidden');
@@ -202,7 +184,6 @@
             }
         };
 
-        // تشغيل الصفحة عند البداية
         checkUser();
     </script>
 </body>

@@ -7,9 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="bg-gray-900 text-white min-h-screen font-sans">
 
-    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center px-6">
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center px-6 shadow-md">
         <div class="flex items-center gap-4">
             <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ العودة للرئيسية</a>
             <h1 class="text-xl font-bold text-green-400">👁️ إعلانات PTC اليومية</h1>
@@ -64,7 +64,8 @@
 
         async function loadAvailableAds() {
             try {
-                const { data: allAds } = await supabaseClient.from('ptc_ads').select('*');
+                const { data: allAds, error: fetchError } = await supabaseClient.from('ptc_ads').select('*');
+                if (fetchError) throw fetchError;
                 
                 const timeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
                 const { data: watchedAds } = await supabaseClient
@@ -89,29 +90,31 @@
                 adsContainer.innerHTML = ''; 
                 
                 availableAds.forEach(ad => {
+                    // هنا تم الربط المباشر والقطعي مع اسم العمود الخاص بك في قاعدة البيانات
+                    const correctUrl = ad.adsterra_url;
+
                     const card = document.createElement('div');
                     card.className = "bg-gray-800 p-5 rounded-xl border border-gray-700 flex justify-between items-center shadow-md";
                     
-                    // تحويل الزر إلى وسم رابط حقيقي <a> يحمل الخصائص القياسية المباشرة لمنع حظر المتصفح
                     card.innerHTML = `
                         <div>
-                            <h3 class="font-bold text-white mb-1">${ad.title}</h3>
-                            <p class="text-xs text-gray-400 mb-2">المدة: ${ad.duration} ثانية</p>
-                            <div class="text-green-400 text-sm font-bold">💰 +${ad.reward_points} نقطة</div>
+                            <h3 class="font-bold text-white mb-1">${ad.title || 'إعلان بدون عنوان'}</h3>
+                            <p class="text-xs text-gray-400 mb-2">المدة: ${ad.duration || 30} ثانية</p>
+                            <div class="text-green-400 text-sm font-bold">💰 +${ad.reward_points || 0} نقطة</div>
                         </div>
-                        <a href="${ad.url}" target="_blank" rel="noopener noreferrer" class="watch-link bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md inline-block text-center">
+                        <a href="${correctUrl}" target="_blank" rel="noopener noreferrer" class="watch-link bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md inline-block text-center">
                             شاهد الآن 👁️
                         </a>
                     `;
 
-                    // عند النقر على الرابط، يتم تشغيل العداد التنازلي في الصفحة دون إيقاف فتح الرابط
                     card.querySelector('.watch-link').onclick = (e) => {
                         if (activeAdId) {
-                            e.preventDefault(); // منع فتح الرابط إذا كان هناك إعلان آخر يعمل حالياً
+                            e.preventDefault(); 
                             alert("يرجى إنهاء الإعلان الحالي أولاً!");
                             return;
                         }
-                        startTimer(ad.id, ad.duration);
+                        
+                        startTimer(ad.id, ad.duration || 30);
                     };
 
                     adsContainer.appendChild(card);
@@ -122,7 +125,6 @@
             }
         }
 
-        // دالة تشغيل العداد المستقلة
         function startTimer(adId, duration) {
             activeAdId = adId;
             
@@ -148,7 +150,6 @@
             }, 1000);
         }
 
-        // الضغط على زر التأكيد لإضافة النقاط
         document.getElementById('confirmClaimBtn').onclick = async (e) => {
             e.preventDefault();
             if (!activeAdId || !userId) return;

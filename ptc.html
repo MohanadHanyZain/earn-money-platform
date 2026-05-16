@@ -31,9 +31,9 @@
             </button>
         </div>
 
-        <h2 class="text-lg font-bold mb-4 text-gray-400">الإعلانات المتاحة لك اليوم:</h2>
+        <h2 class="text-lg font-bold mb-4 text-gray-400">الروابط المتاحة للشغل اليومي:</h2>
         <div id="adsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div id="loadingText" class="text-center text-gray-500 col-span-full py-8">جاري تحميل الإعلانات المتاحة...</div>
+            <div id="loadingText" class="text-center text-gray-500 col-span-full py-8">جاري تحميل روابط اليوم...</div>
         </div>
     </div>
 
@@ -64,9 +64,11 @@
 
         async function loadAvailableAds() {
             try {
+                // 1. جلب الـ 50 رابط أو كل الروابط الموجودة بجدول ptc_ads
                 const { data: allAds, error: fetchError } = await supabaseClient.from('ptc_ads').select('*');
                 if (fetchError) throw fetchError;
                 
+                // 2. جلب الروابط التي شاهدها العضو في آخر 24 ساعة فقط
                 const timeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
                 const { data: watchedAds } = await supabaseClient
                     .from('ptc_history')
@@ -77,32 +79,29 @@
                 const watchedIds = watchedAds ? watchedAds.map(item => item.ad_id) : [];
                 const adsContainer = document.getElementById('adsContainer');
                 
-                const loadingText = document.getElementById('loadingText');
-                if (loadingText) loadingText.classList.add('hidden');
-                
+                if (document.getElementById('loadingText')) document.getElementById('loadingText').classList.add('hidden');
+                adsContainer.innerHTML = ''; 
+
+                // 3. فلترة الروابط: أي رابط تم مشاهدته في الـ 24 ساعة الماضية يتم إخفاؤه تلقائياً
                 const availableAds = allAds ? allAds.filter(ad => !watchedIds.includes(ad.id)) : [];
 
                 if (availableAds.length === 0) {
-                    adsContainer.innerHTML = `<div class="text-center text-gray-500 col-span-full py-8">🎉 لقد شاهدت جميع إعلانات اليوم! انتظر تجددها تلقائياً.</div>`;
+                    adsContainer.innerHTML = `<div class="text-center text-gray-500 col-span-full py-8">🎉 لقد أنهيت جميع روابط اليوم بنجاح! ستتجدد الروابط لك تلقائياً بعد مرور 24 ساعة من تاريخ مشاهدتها.</div>`;
                     return;
                 }
 
-                adsContainer.innerHTML = ''; 
-                
+                // عرض الروابط غير المشاهدة فقط
                 availableAds.forEach(ad => {
-                    // هنا تم الربط المباشر والقطعي مع اسم العمود الخاص بك في قاعدة البيانات
-                    const correctUrl = ad.adsterra_url;
-
                     const card = document.createElement('div');
                     card.className = "bg-gray-800 p-5 rounded-xl border border-gray-700 flex justify-between items-center shadow-md";
                     
                     card.innerHTML = `
                         <div>
-                            <h3 class="font-bold text-white mb-1">${ad.title || 'إعلان بدون عنوان'}</h3>
-                            <p class="text-xs text-gray-400 mb-2">المدة: ${ad.duration || 30} ثانية</p>
-                            <div class="text-green-400 text-sm font-bold">💰 +${ad.reward_points || 0} نقطة</div>
+                            <h3 class="font-bold text-white mb-1">${ad.title}</h3>
+                            <p class="text-xs text-gray-400 mb-2">مدة الانتظار: ${ad.duration || 30} ثانية</p>
+                            <div class="text-green-400 text-sm font-bold">💰 +${ad.reward_points} نقطة</div>
                         </div>
-                        <a href="${correctUrl}" target="_blank" rel="noopener noreferrer" class="watch-link bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md inline-block text-center">
+                        <a href="${ad.adsterra_url}" target="_blank" rel="noopener noreferrer" class="watch-link bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md inline-block text-center">
                             شاهد الآن 👁️
                         </a>
                     `;
@@ -110,10 +109,9 @@
                     card.querySelector('.watch-link').onclick = (e) => {
                         if (activeAdId) {
                             e.preventDefault(); 
-                            alert("يرجى إنهاء الإعلان الحالي أولاً!");
+                            alert("يرجى إنهاء الرابط الحالي أولاً!");
                             return;
                         }
-                        
                         startTimer(ad.id, ad.duration || 30);
                     };
 
@@ -121,13 +119,12 @@
                 });
 
             } catch (err) {
-                console.error("حدث خطأ أثناء تحميل الإعلانات:", err);
+                console.error("حدث خطأ:", err);
             }
         }
 
         function startTimer(adId, duration) {
             activeAdId = adId;
-            
             const activeAdSection = document.getElementById('activeAdSection');
             const timerEl = document.getElementById('countdownTimer');
             const confirmBtn = document.getElementById('confirmClaimBtn');
@@ -156,7 +153,7 @@
 
             const confirmBtn = document.getElementById('confirmClaimBtn');
             confirmBtn.disabled = true;
-            confirmBtn.innerText = "جاري التأمين وإضافة النقاط... ⏳";
+            confirmBtn.innerText = "جاري التأكيد وإضافة النقاط... ⏳";
 
             try {
                 const { error } = await supabaseClient.rpc('claim_ptc_reward', {
@@ -166,12 +163,11 @@
 
                 if (error) throw new Error(error.message);
 
-                alert("🎉 مبارك! تم التحقق من مشاهدتك بنجاح وإضافة النقاط لرصيدك.");
+                alert("🎉 ممتاز! تم تأكيد المشاهدة بنجاح وإضافة النقاط.");
                 
                 clearInterval(timerInterval);
                 activeAdId = null;
                 document.getElementById('activeAdSection').classList.add('hidden');
-                
                 await checkUser();
 
             } catch (err) {

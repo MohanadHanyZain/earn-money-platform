@@ -67,24 +67,16 @@
                 const { data: allAds, error: fetchError } = await supabaseClient.from('ptc_ads').select('*');
                 if (fetchError) throw fetchError;
                 
-                // جلب تاريخ المشاهدات بفحص وجود العمود أولاً بشكل آمن لتجنب توقف الصفحة
                 const timeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-                const { data: watchedAds, error: historyError } = await supabaseClient
+                const { data: watchedAds } = await supabaseClient
                     .from('ptc_history')
                     .select('ad_id')
                     .eq('user_id', userId)
                     .gt('created_at', timeLimit);
 
-                // إذا حدث خطأ بسبب عدم تحديث الكاش بعد، سنقوم بجلب السجلات بدون فلترة الوقت مؤقتاً لتفادي انهيار الصفحة
-                let watchedIds = [];
-                if (!historyError && watchedAds) {
-                    watchedIds = watchedAds.map(item => item.ad_id) : [];
-                } else {
-                    const { data: fallbackFetch } = await supabaseClient.from('ptc_history').select('ad_id').eq('user_id', userId);
-                    if (fallbackFetch) watchedIds = fallbackFetch.map(item => item.ad_id);
-                }
-
+                const watchedIds = watchedAds ? watchedAds.map(item => item.ad_id) : [];
                 const adsContainer = document.getElementById('adsContainer');
+                
                 const loadingText = document.getElementById('loadingText');
                 if (loadingText) loadingText.classList.add('hidden');
                 
@@ -98,6 +90,7 @@
                 adsContainer.innerHTML = ''; 
                 
                 availableAds.forEach(ad => {
+                    // هنا تم الربط المباشر والقطعي مع اسم العمود الخاص بك في قاعدة البيانات
                     const correctUrl = ad.adsterra_url;
 
                     const card = document.createElement('div');
@@ -120,6 +113,7 @@
                             alert("يرجى إنهاء الإعلان الحالي أولاً!");
                             return;
                         }
+                        
                         startTimer(ad.id, ad.duration || 30);
                     };
 
@@ -133,6 +127,7 @@
 
         function startTimer(adId, duration) {
             activeAdId = adId;
+            
             const activeAdSection = document.getElementById('activeAdSection');
             const timerEl = document.getElementById('countdownTimer');
             const confirmBtn = document.getElementById('confirmClaimBtn');
@@ -176,6 +171,7 @@
                 clearInterval(timerInterval);
                 activeAdId = null;
                 document.getElementById('activeAdSection').classList.add('hidden');
+                
                 await checkUser();
 
             } catch (err) {

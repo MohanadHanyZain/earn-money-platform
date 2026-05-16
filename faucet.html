@@ -6,43 +6,97 @@
     <title>Faucet | Enterprise Earnings Platform</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* جميع تصاميم CSS كما هي بدون تغيير */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: #0A0C10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif; color: #E8EDF2; line-height: 1.5; min-height: 100vh; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0A0C10;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+            color: #E8EDF2;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #14171C; }
-        ::-webkit-scrollbar-thumb { background: #2C3038; border-radius: 0px; }
-        .navbar { background-color: #0D0F13; border-bottom: 1px solid #1E2128; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        ::-webkit-scrollbar-thumb { background: #2C3038; border-radius: 0; }
+        .navbar {
+            background-color: #0D0F13;
+            border-bottom: 1px solid #1E2128;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
         .navbar-left { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
         .back-link { color: #9CA3AF; text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
         .back-link:hover { color: #3B82F6; }
         .page-title { font-size: 1.25rem; font-weight: 600; color: #F0F3F8; }
         .page-title-accent { color: #3B82F6; }
-        .points-badge { background-color: #050608; border: 1px solid #2C303A; padding: 0.4rem 1rem; font-size: 0.8rem; }
+        .points-badge {
+            background-color: #050608;
+            border: 1px solid #2C303A;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+        }
         .points-badge span { color: #3B82F6; font-weight: 700; }
         .faucet-container { max-width: 768px; margin: 0 auto; padding: 1.5rem; }
-        .ad-banner { display: flex; justify-content: center; margin-bottom: 1.75rem; background-color: #0F1117; border: 1px solid #1F222A; padding: 0.5rem; }
-        .corporate-card { background-color: #0F1117; border: 1px solid #1F222A; padding: 2rem 1.75rem; text-align: center; }
+        .ad-banner {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.75rem;
+            background-color: #0F1117;
+            border: 1px solid #1F222A;
+            padding: 0.5rem;
+        }
+        .corporate-card {
+            background-color: #0F1117;
+            border: 1px solid #1F222A;
+            padding: 2rem 1.75rem;
+            text-align: center;
+        }
         .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #F0F3F8; }
         .card-subtitle { color: #9CA3AF; font-size: 0.85rem; margin-bottom: 1.5rem; }
         .reward-highlight { color: #3B82F6; font-weight: 700; }
-        .claim-btn { background-color: #3B82F6; border: none; color: white; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; padding: 1rem 2rem; cursor: pointer; transition: background-color 0.2s; width: 100%; max-width: 280px; margin: 0 auto; }
+        .claim-btn {
+            background-color: #3B82F6;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s;
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+        }
         .claim-btn:hover:not(:disabled) { background-color: #2563EB; }
         .claim-btn:disabled { background-color: #2C303A; cursor: not-allowed; opacity: 0.7; }
         .cooldown-container { margin-top: 1rem; color: #F59E0B; font-weight: 600; font-size: 0.9rem; }
         .cooldown-timer { font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; }
         .hidden { display: none; }
         .text-center { text-align: center; }
-        .navbar, .corporate-card, .claim-btn, .points-badge, .ad-banner { border-radius: 0px; }
+        .navbar, .corporate-card, .claim-btn, .points-badge, .ad-banner { border-radius: 0; }
         @media (max-width: 640px) {
             .navbar { padding: 0.85rem 1rem; }
+            .navbar-left { gap: 1rem; }
             .page-title { font-size: 1rem; }
+            .points-badge { font-size: 0.7rem; padding: 0.3rem 0.8rem; }
             .faucet-container { padding: 1rem; }
             .corporate-card { padding: 1.5rem 1.25rem; }
             .card-title { font-size: 1.25rem; }
-            .claim-btn { max-width: 100%; }
+            .claim-btn { padding: 0.8rem 1.5rem; font-size: 1rem; max-width: 100%; }
+            .ad-banner { padding: 0.25rem; }
         }
-        .claim-btn:focus-visible { outline: 2px solid #3B82F6; outline-offset: 2px; }
+        @media (min-width: 768px) { .corporate-card { padding: 2.25rem; } }
+        .claim-btn:focus-visible, .back-link:focus-visible { outline: 2px solid #3B82F6; outline-offset: 2px; }
     </style>
 </head>
 <body>
@@ -87,9 +141,7 @@
         </div>
     </div>
 
-    <!-- ================================================ -->
-    <!-- SOCIAL BAR SCRIPT - تمت إعادته كما كان في الأصل -->
-    <!-- ================================================ -->
+    <!-- Social Bar Script - ORIGINAL, COMPLETELY UNTOUCHED -->
     <script src="https://pl29465244.effectivecpmnetwork.com/d6/a7/90/d6a790a2620fed6eed0f53885cbb2f75.js"></script>
 
     <script>

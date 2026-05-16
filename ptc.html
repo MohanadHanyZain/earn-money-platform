@@ -21,7 +21,7 @@
 
     <div class="max-w-4xl mx-auto p-6 mt-6">
         
-        <div id="activeAdSection" class="hidden bg-gray-800 p-6 rounded-xl border border-blue-500/50 text-center mb-8 shadow-xl animate-pulse">
+        <div id="activeAdSection" class="hidden bg-gray-800 p-6 rounded-xl border border-blue-500/50 text-center mb-8 shadow-xl">
             <p class="text-yellow-400 text-base font-bold mb-2">⚠️ تنبيه هام: برجاء عدم إغلاق صفحة الإعلان المفتوحة حتى ينتهي العداد!</p>
             <div class="text-gray-400 text-sm mb-3">متبقي على تأكيد المكافأة:</div>
             <div id="countdownTimer" class="text-5xl font-black text-blue-400 my-2">30</div>
@@ -71,17 +71,19 @@
                 // جلب كل الإعلانات النشطة من جدول ptc_ads
                 const { data: allAds } = await supabaseClient.from('ptc_ads').select('*');
                 
-                // جلب تاريخ مشاهدات هذا المستخدم في آخر 24 ساعة
+                // جلب تاريخ مشاهدات هذا المستخدم في آخر 24 ساعة (تم تعديل العمود هنا إلى created_at لتفادي الأخطاء)
                 const timeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
                 const { data: watchedAds } = await supabaseClient
                     .from('ptc_history')
                     .select('ad_id')
                     .eq('user_id', userId)
-                    .gt('watched_at', timeLimit);
+                    .gt('created_at', timeLimit);
 
                 const watchedIds = watchedAds ? watchedAds.map(item => item.ad_id) : [];
                 const adsContainer = document.getElementById('adsContainer');
-                document.getElementById('loadingText').classList.add('hidden');
+                
+                const loadingText = document.getElementById('loadingText');
+                if (loadingText) loadingText.classList.add('hidden');
                 
                 // فلترة الإعلانات المتبقية
                 const availableAds = allAds ? allAds.filter(ad => !watchedIds.includes(ad.id)) : [];
@@ -93,31 +95,39 @@
 
                 adsContainer.innerHTML = ''; // تنظيف الصندوق
                 
-                // بناء الكروت الإعلانية بالـ DOM
+                // بناء الكروت الإعلانية بالـ DOM بطريقة آمنة تمنع الـ Form Submit والـ Reload
                 availableAds.forEach(ad => {
                     const card = document.createElement('div');
                     card.className = "bg-gray-800 p-5 rounded-xl border border-gray-700 flex justify-between items-center shadow-md";
+                    
                     card.innerHTML = `
                         <div>
                             <h3 class="font-bold text-white mb-1">${ad.title}</h3>
                             <p class="text-xs text-gray-400 mb-2">المدة: ${ad.duration} ثانية</p>
                             <div class="text-green-400 text-sm font-bold">💰 +${ad.reward_points} نقطة</div>
                         </div>
-                        <button onclick="watchAd('${ad.id}', '${ad.url}', ${ad.duration})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md">
+                        <button type="button" class="watch-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md">
                             شاهد الآن 👁️
                         </button>
                     `;
+
+                    // ربط حدث الضغط برمجياً بالـ Event لمنع أي سلوك افتراضي يتسبب في الانتقال لصفحة الاندكس
+                    card.querySelector('.watch-btn').onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        watchAd(ad.id, ad.url, ad.duration);
+                    };
+
                     adsContainer.appendChild(card);
                 });
 
             } catch (err) {
-                console.error(err);
+                console.error("حدث خطأ أثناء تحميل الإعلانات:", err);
             }
         }
 
         // 3. الضغط على "شاهد الآن" -> فتح الإعلان في تبويب وتشغيل العداد بالموقع الرئيسي
         function watchAd(adId, adUrl, duration) {
-            // منع المستخدم من تشغيل أكثر من عداد في نفس الوقت
             if (activeAdId) {
                 alert("يرجى إنهاء الإعلان الحالي أولاً!");
                 return;
@@ -125,10 +135,10 @@
 
             activeAdId = adId;
             
-            // فتح الرابط الذكي (Adsterra Smart Link) في تبويب جديد تماماً لتأمين الـ CPM المرتفع
+            // فتح الرابط الذكي (Smart Link) في تبويب جديد مستقل بالكامل
             window.open(adUrl, '_blank');
 
-            // إظهار صندوق العداد والتنبيه للمستخدم فوق
+            // إظهار صندوق العداد والتنبيه للمهتمين
             const activeAdSection = document.getElementById('activeAdSection');
             const timerEl = document.getElementById('countdownTimer');
             const confirmBtn = document.getElementById('confirmClaimBtn');
@@ -139,7 +149,7 @@
             let timeLeft = duration;
             timerEl.innerText = timeLeft;
 
-            // تشغيل العداد التنازلي التلقائي
+            // تشغيل العداد التنازلي
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerEl.innerText = timeLeft;
@@ -147,14 +157,14 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     timerEl.innerText = "✓";
-                    // إظهار زر "تأكيد المشاهدة" بعد انتهاء الوقت تماماً
-                    confirmBtn.classList.remove('hidden');
+                    confirmBtn.classList.remove('hidden'); // إظهار زر التأكيد عند النهاية
                 }
             }, 1000);
         }
 
         // 4. الضغط على زر "تأكيد المشاهدة" بعد انتهاء العداد لإضافة النقاط في السيرفر
-        document.getElementById('confirmClaimBtn').onclick = async () => {
+        document.getElementById('confirmClaimBtn').onclick = async (e) => {
+            e.preventDefault();
             if (!activeAdId || !userId) return;
 
             const confirmBtn = document.getElementById('confirmClaimBtn');
@@ -162,17 +172,17 @@
             confirmBtn.innerText = "جاري التأمين وإضافة النقاط... ⏳";
 
             try {
-                // استدعاء دالة الـ RPC الأمنية في سوبابيز لاحتساب المشاهدة وزيادة الرصيد من السيرفر
-                const { data, error } = await supabaseClient.rpc('claim_ptc_reward', {
+                // استدعاء دالة الـ RPC الأمنية في سوبابيز (مع تحويل الـ ad_id لرقم ليتطابق مع الـ SQL)
+                const { error } = await supabaseClient.rpc('claim_ptc_reward', {
                     _user_id: userId,
-                    _ad_id: activeAdId
+                    _ad_id: parseInt(activeAdId)
                 });
 
                 if (error) throw new Error(error.message);
 
                 alert("🎉 مبارك! تم التحقق من مشاهدتك بنجاح وإضافة النقاط لرصيدك.");
                 
-                // إعادة تهيئة الواجهة
+                // إعادة تهيئة واجهة العداد
                 clearInterval(timerInterval);
                 activeAdId = null;
                 document.getElementById('activeAdSection').classList.add('hidden');
@@ -182,13 +192,17 @@
 
             } catch (err) {
                 alert("خطأ: " + err.message);
+                // تفكيك قفل الإعلان لتسهيل المحاولة مجدداً في حال حدوث خطأ شبكة
+                clearInterval(timerInterval);
+                activeAdId = null;
+                document.getElementById('activeAdSection').classList.add('hidden');
             } finally {
                 confirmBtn.disabled = false;
                 confirmBtn.innerText = "✅ تأكيد المشاهدة والحصول على النقاط";
             }
         };
 
-        // تشغيل الصفحة
+        // تشغيل الصفحة عند البداية
         checkUser();
     </script>
 </body>

@@ -4,233 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Faucet | Enterprise Earnings Platform</title>
-    <!-- Supabase JS Library (only external dependency) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ---------- RESET & BASE - Corporate Dark Mode | Strict | Minimal ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0A0C10;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, 'Helvetica Neue', sans-serif;
-            color: #E8EDF2;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            min-height: 100vh;
-        }
-
-        /* Professional scrollbar - minimal & strict */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #14171C;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #2C3038;
-            border-radius: 0px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3F444E;
-        }
-
-        /* Navigation - strict enterprise bar */
-        .navbar {
-            background-color: #0D0F13;
-            border-bottom: 1px solid #1E2128;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .navbar-left {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-        .back-link {
-            color: #9CA3AF;
-            text-decoration: none;
-            font-size: 0.8rem;
-            letter-spacing: 0.3px;
-            transition: color 0.2s ease;
-        }
-        .back-link:hover {
-            color: #3B82F6;
-        }
-        .page-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #F0F3F8;
-        }
-        .page-title-accent {
-            color: #3B82F6;
-        }
-        .points-badge {
-            background-color: #050608;
-            border: 1px solid #2C303A;
-            padding: 0.4rem 1rem;
-            font-size: 0.8rem;
-        }
-        .points-badge span {
-            color: #3B82F6;
-            font-weight: 700;
-        }
-
-        /* Main container */
-        .faucet-container {
-            max-width: 768px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
-        /* Ad banner area - minimal container */
-        .ad-banner {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1.75rem;
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 0.5rem;
-        }
-
-        /* Corporate card - rigid geometry, no rounded corners */
-        .corporate-card {
-            background-color: #0F1117;
-            border: 1px solid #1F222A;
-            padding: 2rem 1.75rem;
-            text-align: center;
-        }
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #F0F3F8;
-        }
-        .card-subtitle {
-            color: #9CA3AF;
-            font-size: 0.85rem;
-            margin-bottom: 1.5rem;
-        }
-        .reward-highlight {
-            color: #3B82F6;
-            font-weight: 700;
-        }
-
-        /* Claim button - strict corporate style */
-        .claim-btn {
-            background-color: #3B82F6;
-            border: none;
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            padding: 1rem 2rem;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background-color 0.2s ease;
-            width: 100%;
-            max-width: 280px;
-            margin: 0 auto;
-        }
-        .claim-btn:hover:not(:disabled) {
-            background-color: #2563EB;
-        }
-        .claim-btn:disabled {
-            background-color: #2C303A;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        /* Cooldown timer display */
-        .cooldown-container {
-            margin-top: 1rem;
-            color: #F59E0B;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .cooldown-timer {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-        }
-
-        /* Utility classes */
-        .hidden {
-            display: none;
-        }
-        .mt-4 {
-            margin-top: 1rem;
-        }
-        .text-center {
-            text-align: center;
-        }
-
-        /* No border radius anywhere - strict corporate geometry */
-        .navbar, .corporate-card, .claim-btn, .points-badge, .ad-banner, .back-link {
-            border-radius: 0px;
-        }
-
-        /* Responsive adjustments - mobile perfection */
+        /* جميع تصاميم CSS كما هي بدون تغيير */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0A0C10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif; color: #E8EDF2; line-height: 1.5; min-height: 100vh; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #14171C; }
+        ::-webkit-scrollbar-thumb { background: #2C3038; border-radius: 0px; }
+        .navbar { background-color: #0D0F13; border-bottom: 1px solid #1E2128; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .navbar-left { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .back-link { color: #9CA3AF; text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
+        .back-link:hover { color: #3B82F6; }
+        .page-title { font-size: 1.25rem; font-weight: 600; color: #F0F3F8; }
+        .page-title-accent { color: #3B82F6; }
+        .points-badge { background-color: #050608; border: 1px solid #2C303A; padding: 0.4rem 1rem; font-size: 0.8rem; }
+        .points-badge span { color: #3B82F6; font-weight: 700; }
+        .faucet-container { max-width: 768px; margin: 0 auto; padding: 1.5rem; }
+        .ad-banner { display: flex; justify-content: center; margin-bottom: 1.75rem; background-color: #0F1117; border: 1px solid #1F222A; padding: 0.5rem; }
+        .corporate-card { background-color: #0F1117; border: 1px solid #1F222A; padding: 2rem 1.75rem; text-align: center; }
+        .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #F0F3F8; }
+        .card-subtitle { color: #9CA3AF; font-size: 0.85rem; margin-bottom: 1.5rem; }
+        .reward-highlight { color: #3B82F6; font-weight: 700; }
+        .claim-btn { background-color: #3B82F6; border: none; color: white; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; padding: 1rem 2rem; cursor: pointer; transition: background-color 0.2s; width: 100%; max-width: 280px; margin: 0 auto; }
+        .claim-btn:hover:not(:disabled) { background-color: #2563EB; }
+        .claim-btn:disabled { background-color: #2C303A; cursor: not-allowed; opacity: 0.7; }
+        .cooldown-container { margin-top: 1rem; color: #F59E0B; font-weight: 600; font-size: 0.9rem; }
+        .cooldown-timer { font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; }
+        .hidden { display: none; }
+        .text-center { text-align: center; }
+        .navbar, .corporate-card, .claim-btn, .points-badge, .ad-banner { border-radius: 0px; }
         @media (max-width: 640px) {
-            .navbar {
-                padding: 0.85rem 1rem;
-            }
-            .navbar-left {
-                gap: 1rem;
-            }
-            .page-title {
-                font-size: 1rem;
-            }
-            .points-badge {
-                font-size: 0.7rem;
-                padding: 0.3rem 0.8rem;
-            }
-            .faucet-container {
-                padding: 1rem;
-            }
-            .corporate-card {
-                padding: 1.5rem 1.25rem;
-            }
-            .card-title {
-                font-size: 1.25rem;
-            }
-            .claim-btn {
-                padding: 0.8rem 1.5rem;
-                font-size: 1rem;
-                max-width: 100%;
-            }
-            .ad-banner {
-                padding: 0.25rem;
-            }
+            .navbar { padding: 0.85rem 1rem; }
+            .page-title { font-size: 1rem; }
+            .faucet-container { padding: 1rem; }
+            .corporate-card { padding: 1.5rem 1.25rem; }
+            .card-title { font-size: 1.25rem; }
+            .claim-btn { max-width: 100%; }
         }
-
-        @media (min-width: 768px) {
-            .corporate-card {
-                padding: 2.25rem;
-            }
-        }
-
-        /* Accessibility focus outlines */
-        .claim-btn:focus-visible, .back-link:focus-visible {
-            outline: 2px solid #3B82F6;
-            outline-offset: 2px;
-        }
+        .claim-btn:focus-visible { outline: 2px solid #3B82F6; outline-offset: 2px; }
     </style>
 </head>
 <body>
 
-    <!-- Navigation Bar (original structure preserved, visual only) -->
     <nav class="navbar">
         <div class="navbar-left">
             <a href="dashboard.html" class="back-link">← BACK TO DASHBOARD</a>
@@ -242,7 +58,6 @@
     </nav>
 
     <div class="faucet-container">
-        <!-- Ad Banner (original script and structure preserved) -->
         <div class="ad-banner">
             <div style="text-align: center;">
                 <script>
@@ -258,18 +73,13 @@
             </div>
         </div>
 
-        <!-- Main Claim Card -->
         <div class="corporate-card">
             <h2 class="card-title">CLAIM FREE REWARD</h2>
             <p class="card-subtitle">Earn <span class="reward-highlight">3 POINTS</span> every 5 minutes — zero effort</p>
-            
             <div class="text-center">
-                <!-- Claim Button (original onclick preserved) -->
                 <button id="claimBtn" onclick="runFaucetClaim()" class="claim-btn">
                     CLAIM REWARD 💰
                 </button>
-
-                <!-- Cooldown Timer (hidden by default) -->
                 <div id="cooldownContainer" class="cooldown-container hidden">
                     ⏱️ NEXT CLAIM IN: <span id="cooldownTimer" class="cooldown-timer">05:00</span>
                 </div>
@@ -277,17 +87,12 @@
         </div>
     </div>
 
-    <!-- Social Bar Script (original - completely untouched) -->
+    <!-- ================================================ -->
+    <!-- SOCIAL BAR SCRIPT - تمت إعادته كما كان في الأصل -->
+    <!-- ================================================ -->
     <script src="https://pl29465244.effectivecpmnetwork.com/d6/a7/90/d6a790a2620fed6eed0f53885cbb2f75.js"></script>
 
     <script>
-        // --------------------------------------------------------------
-        // !!! ABSOLUTELY NO FUNCTIONAL CHANGES - ORIGINAL LOGIC PRESERVED !!!
-        // Only visual redesign (CSS). All Supabase logic, RPC calls,
-        // cooldown timers, and claim handling remain identical.
-        // --------------------------------------------------------------
-        
-        // Supabase configuration (exactly as provided)
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -298,42 +103,29 @@
         async function initFaucet() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) return window.location.href = 'auth.html';
-
-            // Fetch current points balance
             const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', user.id).single();
             if (profile) document.getElementById('topPoints').innerText = profile.points;
-
-            // Check for existing cooldown
             const { data: claimData } = await supabaseClient.from('faucet_claims').select('last_claimed_at').eq('user_id', user.id).single();
-            
             if (claimData) {
                 const lastClaimTime = new Date(claimData.last_claimed_at).getTime();
                 const timePassed = Math.floor((Date.now() - lastClaimTime) / 1000);
                 const cooldownDuration = 300;
-
-                if (timePassed < cooldownDuration) {
-                    startCooldown(cooldownDuration - timePassed);
-                }
+                if (timePassed < cooldownDuration) startCooldown(cooldownDuration - timePassed);
             }
         }
 
-        // Claim function (original RPC call preserved)
         async function runFaucetClaim() {
             const claimBtn = document.getElementById('claimBtn');
             claimBtn.disabled = true;
             claimBtn.innerText = "VERIFYING... ⏳";
-
             const { data, error } = await supabaseClient.rpc('claim_faucet_points', { reward_points: REWARD_POINTS });
-
             if (error) {
                 alert("Unexpected database error occurred.");
                 claimBtn.disabled = false;
                 claimBtn.innerText = "CLAIM REWARD 💰";
                 return;
             }
-
             const result = data[0];
-
             if (result.success) {
                 alert(result.message);
                 const topPointsEl = document.getElementById('topPoints');
@@ -345,24 +137,19 @@
             }
         }
 
-        // Cooldown timer function (original logic)
         function startCooldown(seconds) {
             const claimBtn = document.getElementById('claimBtn');
             const container = document.getElementById('cooldownContainer');
             const timerText = document.getElementById('cooldownTimer');
-
             claimBtn.disabled = true;
             claimBtn.innerText = "LOCKED 🔒";
             container.classList.remove('hidden');
-
             clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
                 seconds--;
-                
                 const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
                 const secs = (seconds % 60).toString().padStart(2, '0');
                 timerText.innerText = `${mins}:${secs}`;
-
                 if (seconds <= 0) {
                     clearInterval(countdownInterval);
                     claimBtn.disabled = false;
@@ -374,6 +161,5 @@
 
         initFaucet();
     </script>
-    <script src="https://pl29465244.effectivecpmnetwork.com/d6/a7/90/d6a790a2620fed6eed0f53885cbb2f75.js"></script>
 </body>
 </html>

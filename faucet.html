@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صنبور الفوست - منصة الأرباح</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <!-- شريط التنقل (Navbar) -->
+    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ العودة للرئيسية</a>
+            <h1 class="text-xl font-bold text-teal-400">🚰 صنبور الفوست</h1>
+        </div>
+        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700 text-sm">
+            رصيدك: <span id="topPoints" class="text-green-400 font-bold">0</span> نقطة
+        </div>
+    </nav>
+
+    <div class="max-w-2xl mx-auto p-6 mt-10">
+        
+        <!-- مكان إعلان بنر علوي من Adsterra (اختياري) -->
+        <div class="bg-gray-800 p-2 text-center rounded-lg mb-6 border border-gray-700 text-xs text-gray-500">
+            <!-- إلصق هنا كود البنر الإعلاني العادي (Banner 468x60) إذا رغبت -->
+            إعلان بنر علوي
+        </div>
+
+        <!-- كرت المطالبة الرئيسي -->
+        <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700 text-center">
+            <h2 class="text-2xl font-bold mb-2 text-teal-400">طالب بمكافأتك المجانية!</h2>
+            <p class="text-gray-400 mb-6">يمكنك الحصول على <span class="text-green-400 font-bold">3 نقاط</span> كل 5 دقائق بدون مجهود.</p>
+
+            <!-- زر الكابتشا والمطالبة -->
+            <div class="space-y-6 flex flex-col items-center justify-center">
+                
+                <!-- زر المطالبة الفعلي -->
+                <button id="claimBtn" onclick="runFaucetClaim()" class="w-full sm:w-64 bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-8 rounded-lg text-xl shadow-lg transition transform hover:scale-105 disabled:bg-gray-700 disabled:text-gray-500 disabled:scale-100">
+                    اضغط للمطالبة 💰
+                </button>
+
+                <!-- عداد الانتظار (يظهر فقط إذا كان الزر مقفلاً) -->
+                <div id="cooldownContainer" class="hidden text-orange-400 font-bold text-lg animate-pulse">
+                    ⏱️ يمكنك المطالبة مجدداً بعد: <span id="cooldownTimer">00:00</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ⚠️ مكان وضع إعلان الـ Social Bar الذكي من Adsterra -->
+    <!-- ضع كود الـ Script الخاص بالـ Social Bar الذي نسخته من Adsterra هنا تماماً قبل إغلاق الـ body -->
+    <!-- مثال: <script type='text/javascript' src='//plxxxx.invoke.js'></script> -->
+
+    <script>
+        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let countdownInterval;
+        const REWARD_POINTS = 3; // الجائزة 3 نقاط
+
+        async function initFaucet() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return window.location.href = 'auth.html';
+
+            // جلب رصيد النقاط
+            const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', user.id).single();
+            if (profile) document.getElementById('topPoints').innerText = profile.points;
+
+            // التحقق هل المستخدم لديه حظر انتظار حالي (Cooldown) بالخلفية
+            const { data: claimData } = await supabaseClient.from('faucet_claims').select('last_claimed_at').eq('user_id', user.id).single();
+            
+            if (claimData) {
+                const lastClaimTime = new Date(claimData.last_claimed_at).getTime();
+                const timePassed = Math.floor((Date.now() - lastClaimTime) / 1000);
+                const cooldownDuration = 300; // 5 دقائق
+
+                if (timePassed < cooldownDuration) {
+                    startCooldown(cooldownDuration - timePassed);
+                }
+            }
+        }
+
+        // --- دالة تشغيل المطالبة والاتصال بالسيرفر ---
+        async function runFaucetClaim() {
+            const claimBtn = document.getElementById('claimBtn');
+            claimBtn.disabled = true;
+            claimBtn.innerText = "جاري التحقق... ⏳";
+
+            // استدعاء دالة السيرفر الأمنية لطلب النقاط
+            const { data, error } = await supabaseClient.rpc('claim_faucet_points', { reward_points: REWARD_POINTS });
+
+            if (error) {
+                alert("حدث خطأ غير متوقع.");
+                claimBtn.disabled = false;
+                claimBtn.innerText = "اضغط للمطالبة 💰";
+                return;
+            }
+
+            // قراءة رد السيرفر الذكي
+            const result = data[0]; 
+
+            if (result.success) {
+                alert(result.message);
+                // تحديث رصيد النقاط المعروض في الأعلى فوراً
+                const topPointsEl = document.getElementById('topPoints');
+                topPointsEl.innerText = parseInt(topPointsEl.innerText) + REWARD_POINTS;
+                
+                // بدء عداد الخمس دقائق
+                startCooldown(result.next_claim_in);
+            } else {
+                alert(result.message);
+                startCooldown(result.next_claim_in);
+            }
+        }
+
+        // --- دالة تشغيل العداد التنازلي بصيغة الدقائق والثواني دقيقة ---
+        function startCooldown(seconds) {
+            const claimBtn = document.getElementById('claimBtn');
+            const container = document.getElementById('cooldownContainer');
+            const timerText = document.getElementById('cooldownTimer');
+
+            claimBtn.disabled = true;
+            claimBtn.innerText = "مغلق 🔒";
+            container.classList.remove('hidden');
+
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                seconds--;
+                
+                // تحويل الثواني إلى شكل دقيقة:ثانية (04:32 مثلاً)
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                timerText.innerText = `${mins}:${secs}`;
+
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    claimBtn.disabled = false;
+                    claimBtn.innerText = "اضغط للمطالبة 💰";
+                    container.classList.add('hidden');
+                }
+            }, 1000);
+        }
+
+        initFaucet();
+    </script>
+</body>
+</html>

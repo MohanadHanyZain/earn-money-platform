@@ -3,91 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تهانينا! - أرباحي</title>
+    <title>جاري تأكيد الجائزة... ⏳</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center font-sans">
 
-    <div class="max-w-md w-full bg-gray-800 border border-gray-700 p-8 rounded-2xl text-center shadow-2xl">
-        <div id="loadingIcon" class="text-6xl mb-4 animate-spin text-orange-500">⏳</div>
-        <div id="successIcon" class="text-6xl mb-4 text-green-500 hidden">🎉</div>
-        <div id="errorIcon" class="text-6xl mb-4 text-red-500 hidden">❌</div>
+    <div class="bg-gray-800 p-8 rounded-2xl border border-gray-700 text-center max-w-md shadow-2xl">
+        <div id="loadingIcon" class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mx-auto mb-6"></div>
         
-        <h2 id="statusTitle" class="text-2xl font-black mb-2 text-gray-200">جاري التحقق من التخطي...</h2>
-        <p id="msg" class="text-gray-400 text-sm mb-6">برجاء الانتظار ثوانٍ معدودة لإضافة النقاط إلى حسابك.</p>
+        <h2 id="statusTitle" class="text-xl font-bold mb-2 text-yellow-400">جاري التحقق من تخطي الرابط...</h2>
+        <p id="statusMessage" class="text-gray-400 text-sm mb-6">برجاء الانتظار ثوانٍ معدودة لإضافة النقاط إلى حسابك بنجاح.</p>
         
-        <a href="shortlinks.html" class="inline-block bg-gray-700 hover:bg-gray-600 text-white font-bold px-6 py-2 rounded-xl transition text-sm">
-            ⬅️ العودة لصفحة الروابط
+        <a href="shortlinks.html" id="backBtn" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg transition shadow-md">
+            🔗 العودة لصفحة الروابط
         </a>
     </div>
 
     <script>
-        async function claimPoints() {
-            const msgEl = document.getElementById('msg');
-            const titleEl = document.getElementById('statusTitle');
-            const loadEl = document.getElementById('loadingIcon');
-            const successEl = document.getElementById('successIcon');
-            const errorEl = document.getElementById('errorIcon');
-
-            // 1. التقاط الـ ID من المتصفح محلياً بدلاً من الرابط لمنع مشكلة "USERID" النصية
-            let userId = null;
-            const sessionText = localStorage.getItem('sb-qilhlovlotvieatbtkhw-auth-token');
-            if (sessionText) {
-                userId = JSON.parse(sessionText)?.user?.id;
-            }
-
-            // 2. جلب رقم الرابط من الـ URL (المسترجع من موقع الاختصار)
+        async function verifyAndCredit() {
+            // 1. التقاط الـ uid من رابط الصفحة الحالي
             const urlParams = new URLSearchParams(window.location.search);
-            const linkId = urlParams.get('linkid');
+            const userId = urlParams.get('uid');
+
+            const statusTitle = document.getElementById('statusTitle');
+            const statusMessage = document.getElementById('statusMessage');
+            const loadingIcon = document.getElementById('loadingIcon');
+            const backBtn = document.getElementById('backBtn');
 
             if (!userId) {
-                loadEl.classList.add('hidden');
-                errorEl.classList.remove('hidden');
-                titleEl.innerText = "فشل التحقق!";
-                msgEl.innerText = "لم نتمكن من العثور على حسابك، يرجى تسجيل الدخول أولاً.";
-                return;
-            }
-
-            if (!linkId) {
-                loadEl.classList.add('hidden');
-                errorEl.classList.remove('hidden');
-                titleEl.innerText = "بيانات ناقصة!";
-                msgEl.innerText = "لم نتمكن من تحديد رقم الرابط المتخطى.";
+                statusTitle.innerText = "❌ خطأ في التحقق";
+                statusTitle.className = "text-xl font-bold mb-2 text-red-500";
+                statusMessage.innerText = "لم نتمكن من العثور على معرّف المستخدم الحقيقي.";
+                loadingIcon.classList.add('hidden');
+                backBtn.classList.remove('hidden');
                 return;
             }
 
             try {
-                // 3. إرسال البيانات للـ Edge Function
-                const response = await fetch('https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/smart-service', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId, linkId: linkId })
+                // 2. إرسال الطلب مباشرة إلى الـ Edge Function الخاصة بك لتضيف النقاط من السيرفر
+                // استبدل الرابط أدناه برابط الـ Edge Function الفعلي الخاص بك تماماً
+                const EDGE_FUNCTION_URL = `https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/YOUR_FUNCTION_NAME?uid=${userId}`;
+                
+                const response = await fetch(EDGE_FUNCTION_URL, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
                 const result = await response.json();
 
-                loadEl.classList.add('hidden');
-
                 if (response.ok && result.success) {
-                    successEl.classList.remove('hidden');
-                    titleEl.innerText = "مبروك! تم إضافة النقاط";
-                    titleEl.className = "text-2xl font-black mb-2 text-green-400";
-                    msgEl.innerText = "تمت العملية بنجاح وتم إضافة مكافأتك للرصيد وقفل الرابط لـ 24 ساعة.";
+                    // نجاح العملية
+                    statusTitle.innerText = "🎉 مبروك! تم إضافة النقاط";
+                    statusTitle.className = "text-xl font-bold mb-2 text-green-400";
+                    statusMessage.innerText = "تم التحقق بنجاح وإضافة نقطتين إلى رصيدك الحالي.";
                 } else {
-                    errorEl.classList.remove('hidden');
-                    titleEl.innerText = "عذراً، حدث خطأ";
-                    msgEl.innerText = result.error || "فشلت العملية.";
+                    throw new Error(result.error || "فشل السيرفر في معالجة الطلب");
                 }
+
             } catch (err) {
-                loadEl.classList.add('hidden');
-                errorEl.classList.remove('hidden');
-                titleEl.innerText = "خطأ في الاتصال!";
-                msgEl.innerText = "حدث خطأ غير متوقع أثناء الاتصال بالسيرفر.";
+                statusTitle.innerText = "⚠️ حدث خطأ أثناء التحديث";
+                statusTitle.className = "text-xl font-bold mb-2 text-red-400";
+                statusMessage.innerText = err.message || "تأكد من إعدادات الاتصال بالسيرفر.";
+            } finally {
+                loadingIcon.classList.add('hidden');
+                backBtn.classList.remove('hidden');
             }
         }
 
-        // تشغيل الدالة فور تحميل الصفحة
-        window.onload = claimPoints;
+        // تشغيل الفحص فور تحميل الصفحة
+        verifyAndCredit();
     </script>
 </body>
 </html>

@@ -19,8 +19,10 @@
         </a>
     </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     async function verifyAndCredit() {
+        // 1. التقاط الـ uid من رابط الصفحة الحالي
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('uid');
 
@@ -39,27 +41,26 @@
         }
 
         try {
+            // 2. تهيئة عميل سوبابيز مباشرة داخل الصفحة (المكتبة تتعامل مع الأمان تلقائياً)
+            const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
             
-            // قمنا بدمج المفتاح داخل الرابط مباشرة ليمر بأمان وبدون مشاكل CORS وبدون الحاجة لـ Headers مخصصة
-            const EDGE_FUNCTION_URL = `https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/smart-service?uid=${userId}&key=${SUPABASE_ANON_KEY}`;
-            
-            // طلب نظيف وبسيط جداً يقبله أي متصفح
-            const response = await fetch(EDGE_FUNCTION_URL, {
-                method: 'GET'
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // 3. استدعاء دالة الـ SQL (RPC) مباشرة لتحديث نقاط المستخدم بأمان وبدون إيرور 401
+            const { data, error } = await supabaseClient.rpc('confirm_shortlink_payout', {
+                _user_id: userId
             });
 
-            const result = await response.json();
+            if (error) throw error;
 
-            if (response.ok && result.success) {
-                statusTitle.innerText = "🎉 مبروك! تم إضافة النقاط";
-                statusTitle.className = "text-xl font-bold mb-2 text-green-400";
-                statusMessage.innerText = "تم التحقق بنجاح وإضافة نقطتين إلى رصيدك الحالي.";
-            } else {
-                throw new Error(result.error || "فشل السيرفر في معالجة الطلب");
-            }
+            // نجاح العملية واحتساب النقاط
+            statusTitle.innerText = "🎉 مبروك! تم إضافة النقاط";
+            statusTitle.className = "text-xl font-bold mb-2 text-green-400";
+            statusMessage.innerText = "تم التحقق بنجاح وإضافة نقطتين إلى رصيدك الحالي.";
 
         } catch (err) {
+            console.error(err);
             statusTitle.innerText = "⚠️ حدث خطأ أثناء التحديث";
             statusTitle.className = "text-xl font-bold mb-2 text-red-400";
             statusMessage.innerText = err.message || "تأكد من إعدادات الاتصال بالسيرفر.";
@@ -69,6 +70,7 @@
         }
     }
 
+    // تشغيل الفحص فور تحميل الصفحة
     verifyAndCredit();
 </script>
 </body>

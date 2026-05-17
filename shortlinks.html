@@ -80,51 +80,60 @@
                     `;
 
                     card.querySelector('.claim-btn').onclick = async (e) => {
-                        const btn = e.target;
-                        btn.disabled = true;
-                        btn.innerText = "جاري الاتصال بـ ShrinkMe... ⏳";
+    const btn = e.target;
+    
+    // التأكد أولاً من أن المستخدم مسجل دخول ومعرفه موجود
+    if (!userId) {
+        alert("برجاء تسجيل الدخول أولاً!");
+        window.location.href = 'auth.html';
+        return;
+    }
 
-                        try {
-                            // دمج الـ userId في نهاية الرابط الخاص بـ ShrinkMe
-                            const apiUrl = `${link.short_url}${userId}`;
-                            const response = await fetch(apiUrl);
-                            const data = await response.json();
+    btn.disabled = true;
+    btn.innerText = "جاري تجهيز الرابط... ⏳";
 
-                            // فحص استجابة سيرفر ShrinkMe
-                            if (data.status === "success" && data.shortenedUrl) {
-                                
-                                // الحل هنا: لا نسجل النقرة في قاعدة البيانات إلا بعد التأكد من أن الرابط جاهز وفتح بنجاح
-                                const { error: rpcError } = await supabaseClient.rpc('register_link_click', {
-                                    _user_id: userId,
-                                    _link_id: link.id
-                                });
+    try {
+        // دمج الـ userId الحقيقي والـ UUID في نهاية الرابط بشكل صحيح وقاطع
+        const apiUrl = link.short_url + userId;
+        
+        // جلب الرابط المختصر خلف الكواليس
+        const response = await fetch(apiUrl);
+        const data = await response.json();
 
-                                if (rpcError) {
-                                    alert(rpcError.message);
-                                    btn.disabled = false;
-                                    btn.innerText = "اختصار الآن 🔗";
-                                    return;
-                                }
+        if (data.status === "success" && data.shortenedUrl) {
+            
+            // 1. تسجيل النقرة في سوبابيز لحظر الرابط مؤقتاً
+            const { error: rpcError } = await supabaseClient.rpc('register_link_click', {
+                _user_id: userId,
+                _link_id: link.id
+            });
 
-                                // فتح صفحة تخطي إعلانات ShrinkMe المستقرة
-                                window.open(data.shortenedUrl, '_blank');
-                                
-                                // تحديث الواجهة فوراً لإخفاء الرابط المستهلك
-                                loadShortLinks();
+            if (rpcError) {
+                alert(rpcError.message);
+                btn.disabled = false;
+                btn.innerText = "اختصار الآن 🔗";
+                return;
+            }
 
-                            } else {
-                                alert("فشل جلب الرابط من ShrinkMe، حاول مجدداً.");
-                                btn.disabled = false;
-                                btn.innerText = "اختصار الآن 🔗";
-                            }
+            // 2. الحل السحري: فتح الرابط المختصر الفعلي الناتج (وليس رابط الـ API الأسود!)
+            window.open(data.shortenedUrl, '_blank');
+            
+            // إعادة تحديث القائمة لإخفاء الرابط المفتوح
+            setTimeout(() => { loadShortLinks(); }, 1000);
 
-                        } catch (err) {
-                            console.error(err);
-                            alert("حدث خطأ في الشبكة أثناء الاتصال بموقع الاختصار.");
-                            btn.disabled = false;
-                            btn.innerText = "اختصار الآن 🔗";
-                        }
-                    };
+        } else {
+            alert("حدث خطأ في موقع الاختصار، برجاء المحاولة لاحقاً.");
+            btn.disabled = false;
+            btn.innerText = "اختصار الآن 🔗";
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("فشل الاتصال بموقع الاختصار، تأكد من جودة الإنترنت.");
+        btn.disabled = false;
+        btn.innerText = "اختصار الآن 🔗";
+    }
+};
 
                     container.appendChild(card);
                 });

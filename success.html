@@ -20,59 +20,64 @@
     </div>
 
     <script>
-        async function verifyAndCredit() {
-            // 1. التقاط الـ uid من رابط الصفحة الحالي
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('uid');
+    async function verifyAndCredit() {
+        // 1. التقاط الـ uid من رابط الصفحة الحالي
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('uid');
 
-            const statusTitle = document.getElementById('statusTitle');
-            const statusMessage = document.getElementById('statusMessage');
-            const loadingIcon = document.getElementById('loadingIcon');
-            const backBtn = document.getElementById('backBtn');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusMessage = document.getElementById('statusMessage');
+        const loadingIcon = document.getElementById('loadingIcon');
+        const backBtn = document.getElementById('backBtn');
 
-            if (!userId) {
-                statusTitle.innerText = "❌ خطأ في التحقق";
-                statusTitle.className = "text-xl font-bold mb-2 text-red-500";
-                statusMessage.innerText = "لم نتمكن من العثور على معرّف المستخدم الحقيقي.";
-                loadingIcon.classList.add('hidden');
-                backBtn.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                // 2. إرسال الطلب مباشرة إلى الـ Edge Function الخاصة بك لتضيف النقاط من السيرفر
-                // استبدل الرابط أدناه برابط الـ Edge Function الفعلي الخاص بك تماماً
-
-                const EDGE_FUNCTION_URL = `https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/smart-service?uid=${userId}`;
-
-                const response = await fetch(EDGE_FUNCTION_URL, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    // نجاح العملية
-                    statusTitle.innerText = "🎉 مبروك! تم إضافة النقاط";
-                    statusTitle.className = "text-xl font-bold mb-2 text-green-400";
-                    statusMessage.innerText = "تم التحقق بنجاح وإضافة نقطتين إلى رصيدك الحالي.";
-                } else {
-                    throw new Error(result.error || "فشل السيرفر في معالجة الطلب");
-                }
-
-            } catch (err) {
-                statusTitle.innerText = "⚠️ حدث خطأ أثناء التحديث";
-                statusTitle.className = "text-xl font-bold mb-2 text-red-400";
-                statusMessage.innerText = err.message || "تأكد من إعدادات الاتصال بالسيرفر.";
-            } finally {
-                loadingIcon.classList.add('hidden');
-                backBtn.classList.remove('hidden');
-            }
+        if (!userId) {
+            statusTitle.innerText = "❌ خطأ في التحقق";
+            statusTitle.className = "text-xl font-bold mb-2 text-red-500";
+            statusMessage.innerText = "لم نتمكن من العثور على معرّف المستخدم الحقيقي.";
+            loadingIcon.classList.add('hidden');
+            backBtn.classList.remove('hidden');
+            return;
         }
 
-        // تشغيل الفحص فور تحميل الصفحة
-        verifyAndCredit();
-    </script>
+        try {
+            // رابط الدالة الذكية الخاصة بك
+            const EDGE_FUNCTION_URL = `https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/smart-service?uid=${userId}`;
+            
+            // مفتاح الأمان الخاص بمشروعك لفك حظر الـ 401
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+
+            // 2. إرسال الطلب مع تمرير مفتاح الأمان في الـ Headers
+            const response = await fetch(EDGE_FUNCTION_URL, {
+                method: 'GET',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}` // كارت العبور الآمن للسيرفر
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // نجاح العملية واحتساب النقاط
+                statusTitle.innerText = "🎉 مبروك! تم إضافة النقاط";
+                statusTitle.className = "text-xl font-bold mb-2 text-green-400";
+                statusMessage.innerText = "تم التحقق بنجاح وإضافة نقطتين إلى رصيدك الحالي.";
+            } else {
+                throw new Error(result.error || "فشل السيرفر في معالجة الطلب");
+            }
+
+        } catch (err) {
+            statusTitle.innerText = "⚠️ حدث خطأ أثناء التحديث";
+            statusTitle.className = "text-xl font-bold mb-2 text-red-400";
+            statusMessage.innerText = err.message || "تأكد من إعدادات الاتصال بالسيرفر.";
+        } finally {
+            loadingIcon.classList.add('hidden');
+            backBtn.classList.remove('hidden');
+        }
+    }
+
+    // تشغيل الفحص فور تحميل الصفحة
+    verifyAndCredit();
+</script>
 </body>
 </html>

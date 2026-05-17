@@ -19,9 +19,8 @@
         </a>
     </div>
 
-    <script>
+<script>
     async function verifyAndCredit() {
-        // 1. التقاط الـ uid من رابط الصفحة الحالي
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('uid');
 
@@ -40,25 +39,19 @@
         }
 
         try {
-            // رابط الدالة الذكية الخاصة بك
-            const EDGE_FUNCTION_URL = `https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/smart-service?uid=${userId}`;
-            
-            // مفتاح الأمان الخاص بمشروعك لفك حظر الـ 401
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
-
-            // 2. إرسال الطلب مع تمرير مفتاح الأمان في الـ Headers
+            
+            // قمنا بدمج المفتاح داخل الرابط مباشرة ليمر بأمان وبدون مشاكل CORS وبدون الحاجة لـ Headers مخصصة
+            const EDGE_FUNCTION_URL = `https://qilhlovlotvieatbtkhw.supabase.co/functions/v1/smart-service?uid=${userId}&key=${SUPABASE_ANON_KEY}`;
+            
+            // طلب نظيف وبسيط جداً يقبله أي متصفح
             const response = await fetch(EDGE_FUNCTION_URL, {
-                method: 'GET',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}` // كارت العبور الآمن للسيرفر
-                }
+                method: 'GET'
             });
 
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // نجاح العملية واحتساب النقاط
                 statusTitle.innerText = "🎉 مبروك! تم إضافة النقاط";
                 statusTitle.className = "text-xl font-bold mb-2 text-green-400";
                 statusMessage.innerText = "تم التحقق بنجاح وإضافة نقطتين إلى رصيدك الحالي.";
@@ -76,7 +69,6 @@
         }
     }
 
-    // تشغيل الفحص فور تحميل الصفحة
     verifyAndCredit();
 </script>
 </body>

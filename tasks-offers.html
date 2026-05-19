@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitQuest - Tasks & Offers | Earn Rewards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        }
+        .nav-blur {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .coming-soon-card {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(4px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0px rgba(74, 222, 128, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(74, 222, 128, 0.8); }
+        }
+        .glow-animation {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+
+    <!-- Navbar (BitQuest unified style) -->
+    <nav class="nav-blur border-b border-gray-700 p-4 flex flex-wrap justify-between items-center px-6 shadow-lg sticky top-0 z-50 gap-3">
+        <div class="flex items-center gap-3">
+            <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition flex items-center gap-1 bg-gray-800/50 px-3 py-1.5 rounded-lg text-sm">
+                <i class="fas fa-arrow-right text-xs"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-dragon text-green-400 text-xl"></i>
+                <h1 class="text-xl font-black text-white">Bit<span class="text-green-400">Quest</span></h1>
+            </div>
+        </div>
+        <div class="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-700 shadow-md">
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fas fa-coins text-green-400"></i>
+                <span class="text-gray-300">Your balance:</span>
+                <span id="userPoints" class="text-green-400 font-black text-lg">0</span>
+                <span class="text-gray-400 text-xs">points</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto p-6 mt-10 mb-12">
+        
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 bg-green-500/10 px-4 py-1 rounded-full border border-green-500/30 mb-4">
+                <i class="fas fa-clock text-green-400 text-xs"></i>
+                <span class="text-green-300 text-xs font-semibold">COMING SOON</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-black mb-4 text-white">
+                Tasks & Offers
+            </h2>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Complete exciting tasks and special offers to earn bonus points. This section is coming soon!
+            </p>
+        </div>
+
+        <!-- Main Coming Soon Card -->
+        <div class="coming-soon-card rounded-3xl p-12 md:p-16 shadow-2xl border-gray-700 text-center mb-8">
+            <div class="flex justify-center mb-8">
+                <div class="bg-green-500/20 p-6 rounded-full glow-animation">
+                    <i class="fas fa-gift text-green-400 text-6xl float-animation"></i>
+                </div>
+            </div>
+            
+            <h3 class="text-3xl md:text-4xl font-black text-white mb-4">
+                🚀 Coming Very Soon!
+            </h3>
+            
+            <p class="text-gray-300 text-lg mb-8 max-w-xl mx-auto">
+                We're preparing an amazing collection of tasks and exclusive offers just for you. Get ready to earn even more rewards!
+            </p>
+
+            <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
+                <div class="bg-gray-800/60 rounded-xl p-4 flex-1 min-w-fit">
+                    <i class="fas fa-tasks text-green-400 text-2xl mb-2 block"></i>
+                    <h4 class="text-white font-bold mb-1">Micro Tasks</h4>
+                    <p class="text-gray-400 text-xs">Simple tasks with instant rewards</p>
+                </div>
+                <div class="bg-gray-800/60 rounded-xl p-4 flex-1 min-w-fit">
+                    <i class="fas fa-star text-green-400 text-2xl mb-2 block"></i>
+                    <h4 class="text-white font-bold mb-1">Special Offers</h4>
+                    <p class="text-gray-400 text-xs">Exclusive partner offers & deals</p>
+                </div>
+                <div class="bg-gray-800/60 rounded-xl p-4 flex-1 min-w-fit">
+                    <i class="fas fa-bolt text-green-400 text-2xl mb-2 block"></i>
+                    <h4 class="text-white font-bold mb-1">Bonus Points</h4>
+                    <p class="text-gray-400 text-xs">Earn up to 10x rewards</p>
+                </div>
+            </div>
+
+            <!-- Notification Signup -->
+            <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-6 mb-6">
+                <p class="text-gray-300 mb-4">
+                    <i class="fas fa-bell text-green-400 mr-2"></i>
+                    Want to be notified when this feature launches?
+                </p>
+                <form id="notificationForm" class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <input type="email" id="notificationEmail" placeholder="Enter your email" required
+                           class="flex-1 px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:border-green-500 focus:outline-none transition placeholder-gray-400">
+                    <button type="submit" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-lg transition transform hover:scale-105 shadow-lg whitespace-nowrap">
+                        <i class="fas fa-bell mr-2"></i> Notify Me
+                    </button>
+                </form>
+                <p id="notificationStatus" class="text-sm text-green-400 mt-2 hidden"></p>
+            </div>
+
+            <!-- Countdown or Timeline -->
+            <div class="text-center">
+                <p class="text-gray-500 text-sm">
+                    <i class="fas fa-hourglass-half text-green-400"></i> 
+                    Stay tuned for updates!
+                </p>
+            </div>
+        </div>
+
+        <!-- Features Preview -->
+        <div class="mt-12">
+            <h3 class="text-2xl font-bold text-white mb-6 text-center">What You'll Be Able To Do</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Feature 1 -->
+                <div class="bg-gray-800/40 border border-gray-700 rounded-xl p-6 hover:border-green-500/50 transition">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-green-500/20 p-3 rounded-lg flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-2">Complete Tasks</h4>
+                            <p class="text-gray-400 text-sm">
+                                Earn points by completing simple and quick tasks. No time limit, work at your own pace.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-gray-800/40 border border-gray-700 rounded-xl p-6 hover:border-green-500/50 transition">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-green-500/20 p-3 rounded-lg flex-shrink-0">
+                            <i class="fas fa-gift text-green-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-2">Exclusive Offers</h4>
+                            <p class="text-gray-400 text-sm">
+                                Access handpicked offers from trusted partners with high rewards and bonus points.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-gray-800/40 border border-gray-700 rounded-xl p-6 hover:border-green-500/50 transition">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-green-500/20 p-3 rounded-lg flex-shrink-0">
+                            <i class="fas fa-rocket text-green-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-2">Daily Bonuses</h4>
+                            <p class="text-gray-400 text-sm">
+                                Unlock special bonus multipliers for completing daily challenges and streaks.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-gray-800/40 border border-gray-700 rounded-xl p-6 hover:border-green-500/50 transition">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-green-500/20 p-3 rounded-lg flex-shrink-0">
+                            <i class="fas fa-star text-green-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-2">Leaderboard</h4>
+                            <p class="text-gray-400 text-sm">
+                                Compete with other users and earn special rewards for top performers.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="mt-12 text-center">
+            <p class="text-gray-400 mb-6">
+                In the meantime, keep earning from our other features:
+            </p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <a href="faucet.html" class="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold py-2.5 px-6 rounded-lg transition transform hover:scale-105 shadow-lg inline-flex items-center gap-2">
+                    <i class="fas fa-tint"></i> Faucet
+                </a>
+                <a href="ptc.html" class="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold py-2.5 px-6 rounded-lg transition transform hover:scale-105 shadow-lg inline-flex items-center gap-2">
+                    <i class="fas fa-eye"></i> PTC Ads
+                </a>
+                <a href="shortlinks.html" class="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold py-2.5 px-6 rounded-lg transition transform hover:scale-105 shadow-lg inline-flex items-center gap-2">
+                    <i class="fas fa-link"></i> Shortlinks
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="border-t border-gray-800 p-5 text-center text-gray-500 text-xs mt-12">
+        <p>© 2025 BitQuest — Earn crypto with Tasks & Offers (Coming Soon)</p>
+    </footer>
+
+    <script>
+        // ==================== SUPABASE CONFIGURATION ====================
+        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let userId = null;
+
+        // --- Fetch user balance on page load ---
+        async function initPage() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            userId = user.id;
+
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('points')
+                .eq('id', userId)
+                .single();
+                
+            if (profile) {
+                document.getElementById('userPoints').innerText = profile.points || 0;
+            }
+
+            // Subscribe to realtime points updates
+            supabaseClient
+                .channel('realtime:points')
+                .on('postgres_changes', { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'profiles',
+                    filter: `id=eq.${userId}` 
+                }, payload => {
+                    if (payload.new && payload.new.points !== undefined) {
+                        document.getElementById('userPoints').innerText = payload.new.points;
+                    }
+                })
+                .subscribe();
+        }
+
+        // --- Notification Form ---
+        document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('notificationEmail').value;
+            const statusEl = document.getElementById('notificationStatus');
+
+            try {
+                // Store notification preference (optional - could be stored in a table)
+                statusEl.textContent = '✅ Thanks! We\'ll notify you when Tasks & Offers launches!';
+                statusEl.classList.remove('hidden');
+                document.getElementById('notificationForm').reset();
+
+                // Auto-hide message after 5 seconds
+                setTimeout(() => {
+                    statusEl.classList.add('hidden');
+                }, 5000);
+            } catch (err) {
+                statusEl.textContent = '❌ Error. Please try again.';
+                statusEl.classList.remove('text-green-400');
+                statusEl.classList.add('text-red-400');
+            }
+        });
+
+        // Initialize on page load
+        initPage();
+    </script>
+</body>
+</html>

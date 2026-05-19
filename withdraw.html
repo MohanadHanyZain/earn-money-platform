@@ -1,68 +1,176 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سحب الأرباح - منصتي</title>
+    <title>BitQuest - Withdraw Earnings | Crypto Payouts to FaucetPay</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        }
+        .withdraw-card {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+        .nav-blur {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .balance-box {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+        input:focus, select:focus {
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="min-h-screen font-sans">
 
-    <div class="max-w-md mx-auto p-6">
-        <h2 class="text-2xl font-bold mb-6 text-center text-green-400">سحب الأرباح</h2>
+    <!-- Navbar (BitQuest unified style) -->
+    <nav class="nav-blur border-b border-gray-700 p-4 flex flex-wrap justify-between items-center px-6 shadow-lg sticky top-0 z-50 gap-3">
+        <div class="flex items-center gap-3">
+            <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition flex items-center gap-1 bg-gray-800/50 px-3 py-1.5 rounded-lg text-sm">
+                <i class="fas fa-arrow-right text-xs"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-dragon text-green-400 text-xl"></i>
+                <h1 class="text-xl font-black text-white">Bit<span class="text-green-400">Quest</span></h1>
+            </div>
+        </div>
+        <div class="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-700 shadow-md">
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fas fa-coins text-green-400"></i>
+                <span class="text-gray-300">Balance:</span>
+                <span id="userPoints" class="text-green-400 font-black text-lg">0</span>
+                <span class="text-gray-400 text-xs">points</span>
+            </div>
+        </div>
+    </nav>
 
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6 text-center">
-            <p class="text-gray-400 text-sm">رصيدك الحالي</p>
-            <div id="userPoints" class="text-4xl font-black text-white my-2">0</div>
-            <!-- <p class="text-green-500 text-xs font-bold">نقاط جاهزة للسحب</p> -->
+    <div class="max-w-lg mx-auto p-6 mt-6 mb-12">
+        
+        <!-- Header Section -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center gap-2 bg-green-500/10 px-4 py-1 rounded-full border border-green-500/30 mb-3">
+                <i class="fas fa-unlock-alt text-green-400 text-xs"></i>
+                <span class="text-green-300 text-xs font-semibold">Secure Payouts</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white">💰 Withdraw Your Earnings</h2>
+            <p class="text-gray-400 text-sm mt-2">Minimum 1,000 points | Paid directly to FaucetPay</p>
         </div>
 
-        <form id="withdrawForm" class="space-y-4">
-            <div>
-                <label class="block text-sm mb-2 text-gray-400">اختر العملة (على FaucetPay)</label>
-                <select id="cryptoCurrency" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-green-500">
-                    <option value="LTC">Litecoin (LTC) - أسرع وسيله</option>
-                    <option value="USDT">Tether (USDT)</option>
-                    <option value="BTC">Bitcoin (BTC)</option>
-                </select>
+        <!-- Balance Card -->
+        <div class="balance-box rounded-2xl p-6 mb-6 text-center shadow-xl">
+            <div class="flex justify-center mb-2">
+                <div class="bg-green-500/20 p-3 rounded-full">
+                    <i class="fas fa-wallet text-green-400 text-2xl"></i>
+                </div>
             </div>
-
-            <div>
-                <label class="block text-sm mb-2 text-gray-400">كمية النقاط للسحب</label>
-                <input type="number" id="withdrawAmount" min="1000" placeholder="أقل كمية 1000 نقطة" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white" required>
+            <p class="text-gray-400 text-sm uppercase tracking-wide">Available Balance</p>
+            <div class="flex items-center justify-center gap-2 my-2">
+                <span id="userPointsDisplay" class="text-5xl md:text-6xl font-black text-white">0</span>
+                <span class="text-gray-400 font-bold text-lg">pts</span>
             </div>
+            <p class="text-green-500 text-xs font-medium mt-1">
+                <i class="fas fa-check-circle"></i> Minimum withdrawal: 1,000 points
+            </p>
+        </div>
 
-            <div>
-                <label class="block text-sm mb-2 text-gray-400">بريد FaucetPay الإلكتروني</label>
-                <input type="email" id="walletAddress" placeholder="email@example.com" class="w-full bg-gray-700 border border-gray-600 rounded p-3 text-white" required>
+        <!-- Withdrawal Form -->
+        <div class="withdraw-card rounded-2xl p-6 md:p-8 shadow-2xl border border-gray-700">
+            <form id="withdrawForm" class="space-y-5">
+                <!-- Cryptocurrency Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                        <i class="fab fa-bitcoin text-orange-400"></i>
+                        <span>Select Cryptocurrency (FaucetPay)</span>
+                    </label>
+                    <select id="cryptoCurrency" class="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:outline-none focus:border-green-500 transition cursor-pointer">
+                        <option value="LTC">🚀 Litecoin (LTC) - Fastest</option>
+                        <option value="USDT">💰 Tether (USDT) - TRC20</option>
+                        <option value="BTC">₿ Bitcoin (BTC)</option>
+                        <option value="DOGE">🐕 Dogecoin (DOGE)</option>
+                    </select>
+                </div>
+
+                <!-- Points Amount -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                        <i class="fas fa-coins text-green-400"></i>
+                        <span>Points to Withdraw</span>
+                    </label>
+                    <input type="number" id="withdrawAmount" min="1000" step="100" placeholder="Minimum 1,000 points" 
+                           class="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition">
+                    <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                        <i class="fas fa-info-circle"></i>
+                        Enter amount in points (100 points = ~$0.01 equivalent)
+                    </p>
+                </div>
+
+                <!-- FaucetPay Email -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                        <i class="fas fa-envelope text-green-400"></i>
+                        <span>FaucetPay Email Address</span>
+                    </label>
+                    <input type="email" id="walletAddress" placeholder="your@email.com" 
+                           class="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition">
+                    <p class="text-xs text-gray-500 mt-1">Your registered email on FaucetPay to receive funds</p>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" 
+                        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3.5 rounded-xl transition transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2 mt-6">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Submit Withdrawal Request</span>
+                </button>
+            </form>
+
+            <!-- Message Area -->
+            <div id="msgContainer" class="mt-5 text-center">
+                <p id="msg" class="text-sm font-semibold hidden"></p>
             </div>
+        </div>
 
-            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition shadow-lg">
-                تقديم طلب السحب
-            </button>
-        </form>
-
-        <p id="msg" class="mt-4 text-center text-sm font-semibold"></p>
+        <!-- Withdrawal Info -->
+        <div class="mt-6 bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 text-center text-xs text-gray-500">
+            <div class="flex flex-wrap justify-center gap-4">
+                <span><i class="fas fa-clock text-green-400 mr-1"></i> Processing: 24-48 hours</span>
+                <span><i class="fas fa-shield-alt text-green-400 mr-1"></i> Secure & verified</span>
+                <span><i class="fas fa-history text-green-400 mr-1"></i> Minimum: 1,000 points</span>
+            </div>
+        </div>
     </div>
 
+    <footer class="border-t border-gray-800 p-5 text-center text-gray-500 text-xs mt-8">
+        <p>© 2025 BitQuest — Fast & secure crypto withdrawals to FaucetPay</p>
+    </footer>
+
     <script>
-        // إعدادات سوبابيز الخاصة بك
+        // ==================== SUPABASE CONFIGURATION (PRESERVED ORIGINAL) ====================
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentPoints = 0;
+        let currentUserId = null;
 
-        // جلب رصيد المستخدم وعرضه
+        // --- Fetch user balance and display ---
         async function fetchBalance() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) {
                 window.location.href = 'auth.html';
                 return;
             }
+            currentUserId = user.id;
 
-            const { data: profile } = await supabaseClient
+            const { data: profile, error } = await supabaseClient
                 .from('profiles')
                 .select('points')
                 .eq('id', user.id)
@@ -71,45 +179,101 @@
             if (profile) {
                 currentPoints = parseInt(profile.points) || 0;
                 document.getElementById('userPoints').innerText = currentPoints;
+                document.getElementById('userPointsDisplay').innerText = currentPoints;
             }
+            
+            // Subscribe to realtime balance updates
+            subscribeToBalance(user.id);
         }
 
-        // معالجة طلب السحب بأمان
+        // Realtime balance subscription
+        function subscribeToBalance(userId) {
+            supabaseClient
+                .channel('realtime:withdraw_balance')
+                .on('postgres_changes', { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'profiles',
+                    filter: `id=eq.${userId}` 
+                }, payload => {
+                    if (payload.new && payload.new.points !== undefined) {
+                        currentPoints = parseInt(payload.new.points) || 0;
+                        document.getElementById('userPoints').innerText = currentPoints;
+                        document.getElementById('userPointsDisplay').innerText = currentPoints;
+                        
+                        // Visual feedback
+                        const pointsSpan = document.getElementById('userPointsDisplay');
+                        pointsSpan.classList.add('text-green-400', 'scale-110');
+                        setTimeout(() => {
+                            pointsSpan.classList.remove('text-green-400', 'scale-110');
+                        }, 300);
+                    }
+                })
+                .subscribe();
+        }
+
+        // --- Show message helper ---
+        function showMessage(text, isError = false) {
+            const msgEl = document.getElementById('msg');
+            msgEl.innerText = text;
+            msgEl.className = `text-center mt-4 text-sm font-semibold ${isError ? 'text-red-400' : 'text-green-400'}`;
+            msgEl.classList.remove('hidden');
+            
+            // Auto hide after 6 seconds
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 6000);
+        }
+
+        // --- Withdrawal Form Submission (original logic preserved with RPC and inserts) ---
         document.getElementById('withdrawForm').onsubmit = async (e) => {
             e.preventDefault();
             
             const msgEl = document.getElementById('msg');
             const btn = document.getElementById('submitBtn');
+            const amountInput = document.getElementById('withdrawAmount');
+            const cryptoSelect = document.getElementById('cryptoCurrency');
+            const walletInput = document.getElementById('walletAddress');
             
-            msgEl.innerText = ""; // تهيئة الرسالة
+            // Clear previous message
+            msgEl.classList.add('hidden');
             
-            const amount = parseInt(document.getElementById('withdrawAmount').value);
-            const crypto = document.getElementById('cryptoCurrency').value;
-            const wallet = document.getElementById('walletAddress').value;
+            const amount = parseInt(amountInput.value);
+            const crypto = cryptoSelect.value;
+            const wallet = walletInput.value.trim();
 
-            // 1. فحص الحماية البرمجية الأساسية قبل مراسلة السيرفر
+            // --- Validation ---
             if (isNaN(amount) || amount < 1000) {
-                msgEl.innerText = "❌ عذراً، الحد الأدنى للسحب هو 1000 نقطة.";
-                msgEl.className = "text-red-500 text-center mt-4";
+                showMessage("❌ Minimum withdrawal amount is 1,000 points.", true);
                 return;
             }
 
             if (amount > currentPoints) {
-                msgEl.innerText = `❌ رصيدك غير كافٍ. رصيدك الحالي هو ${currentPoints} نقطة فقط.`;
-                msgEl.className = "text-red-500 text-center mt-4";
+                showMessage(`❌ Insufficient balance. Your current balance is ${currentPoints} points.`, true);
                 return;
             }
 
-            // قفل الزرار لمنع الضغط المتكرر أثناء تنفيذ العملية
+            if (!wallet) {
+                showMessage("❌ Please enter your FaucetPay email address.", true);
+                return;
+            }
+
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(wallet)) {
+                showMessage("❌ Please enter a valid email address for FaucetPay.", true);
+                return;
+            }
+
+            // Lock button to prevent double submission
             btn.disabled = true;
-            btn.innerText = 'جاري المعالجة وأمان العملية...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span> Processing...</span>';
 
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
-                if (!user) throw new Error("لم يتم العثور على جلسة مستخدم نشطة.");
+                if (!user) throw new Error("No active session found. Please login again.");
 
-                // 2. الأمان أولاً: استدعاء دالة الخصم من قاعدة البيانات مباشرة
-                // الدالة ترجع خطأ تلقائياً إذا حاول التلاعب بالبيانات بفضل شرط الـ IF بالـ SQL الخاص بك
+                // Step 1: Call RPC to deduct points securely (original preserved)
                 const { error: deductError } = await supabaseClient.rpc('deduct_points', { 
                     _user_id: user.id, 
                     _amount: amount 
@@ -119,43 +283,44 @@
                     throw new Error(deductError.message);
                 }
 
-                // 3. التسجيل ثانياً: طالما نجح الخصم بنجاح، نقوم الآن بتسجيل الطلب بأمان تام
+                // Step 2: Insert withdrawal request into database
                 const { error: insertError } = await supabaseClient.from('withdrawals').insert({
                     user_id: user.id,
                     amount_points: amount,
                     crypto_currency: crypto,
                     wallet_address: wallet,
-                    status: 'pending'
+                    status: 'pending',
+                    created_at: new Date().toISOString()
                 });
 
                 if (insertError) {
-                    // حماية احتياطية نادرة جداً: لو نجح الخصم وفشل التسجيل لأي سبب في شبكة قاعدة البيانات
-                    throw new Error("حدثت مشكلة أثناء تسجيل الطلب، يرجى التواصل مع الدعم الفني.");
+                    // Rare case: points deducted but withdrawal record failed
+                    console.error("Insert error:", insertError);
+                    throw new Error("Withdrawal request failed to register. Please contact support.");
                 }
 
-                // نجاح العملية بالكامل
-                msgEl.innerText = "🎉 تم تقديم طلبك بنجاح! سيتم مراجعته وإرساله لمحفظتك خلال 24 ساعة.";
-                msgEl.className = "text-green-500 text-center mt-4";
-                document.getElementById('withdrawForm').reset(); // تصفير الحقول المتواجدة بالفروم
+                // Success!
+                showMessage(`🎉 Withdrawal request submitted successfully! ${amount} points will be sent to your FaucetPay wallet within 24-48 hours.`, false);
                 
-                await fetchBalance(); // تحديث رقم الرصيد في الشاشة فوراً بعد الخصم
+                // Reset form
+                amountInput.value = '';
+                walletInput.value = '';
+                
+                // Refresh balance display
+                await fetchBalance();
 
             } catch (err) {
-                msgEl.innerText = "خطأ: " + err.message;
-                msgEl.className = "text-red-500 text-center mt-4";
+                console.error("Withdrawal error:", err);
+                showMessage(`❌ Error: ${err.message}`, true);
             } finally {
-                // إعادة تفعيل الزرار
+                // Re-enable button
                 btn.disabled = false;
-                btn.innerText = 'تقديم طلب السحب';
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i><span> Submit Withdrawal Request</span>';
             }
         };
 
-        // تهيئة الصفحة عند الدخول أول مرة
-        initPage();
-        
-        async function initPage() {
-            await fetchBalance();
-        }
+        // Initialize page
+        fetchBalance();
     </script>
 </body>
 </html>

@@ -1,103 +1,225 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - منصة الأرباح</title>
-    <!-- Tailwind CSS للتميم الاحترافي -->
+    <title>BitQuest - Sign In | Earn Free Crypto</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- مكتبة Supabase -->
+    <!-- Font Awesome 6 (for modern icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <meta name="mylead-verification" content="86b7f6ebb08197a43756fa3aaf9ebc01">
+    <style>
+        body {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+        }
+        .glass-card {
+            backdrop-filter: blur(2px);
+            background: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.3);
+            border-color: #4ade80;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+<body class="min-h-screen flex items-center justify-center p-4 font-sans">
 
-    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 id="authTitle" class="text-2xl font-bold mb-6 text-center text-green-400">تسجيل الدخول</h2>
-        
-        <form id="authForm" class="space-y-4">
-            <div id="usernameField" class="hidden">
-                <label class="block text-sm mb-1">اسم المستخدم</label>
-                <input type="text" id="username" class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
+    <!-- Animated background decoration (subtle) -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-green-500/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-green-500/5 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="w-full max-w-md relative z-10">
+        <!-- Logo / Branding above card -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center gap-2 bg-gray-800/80 backdrop-blur-sm px-5 py-2 rounded-full border border-gray-700 shadow-lg">
+                <i class="fas fa-dragon text-green-400 text-xl"></i>
+                <span class="font-black text-2xl tracking-wide text-white">Bit<span class="text-green-400">Quest</span></span>
             </div>
-
-            <div>
-                <label class="block text-sm mb-1">البريد الإلكتروني</label>
-                <input type="email" id="email" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
-            </div>
-
-            <div>
-                <label class="block text-sm mb-1">كلمة المرور</label>
-                <input type="password" id="password" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white">
-            </div>
-
-            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded transition">دخول</button>
-        </form>
-
-        <div class="mt-4 text-center">
-            <button id="toggleAuth" class="text-sm text-gray-400 hover:text-white">ليس لديك حساب؟ إنشاء حساب جديد</button>
+            <p class="text-gray-400 text-sm mt-3">Earn crypto · Faucet · Tasks · Surveys</p>
         </div>
+
+        <!-- Main Auth Card -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-8 transition-all duration-300 hover:shadow-green-500/10">
+            <div class="flex justify-center mb-4">
+                <div class="bg-green-500/20 p-3 rounded-full">
+                    <i id="authIcon" class="fas fa-sign-in-alt text-green-400 text-2xl"></i>
+                </div>
+            </div>
+            <h2 id="authTitle" class="text-3xl font-bold mb-2 text-center text-white tracking-tight">Welcome Back</h2>
+            <p id="authSubtitle" class="text-gray-400 text-center text-sm mb-6">Sign in to continue earning</p>
+            
+            <form id="authForm" class="space-y-5">
+                <!-- Username field (only visible in signup mode) -->
+                <div id="usernameField" class="hidden transition-all duration-200">
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">
+                        <i class="fas fa-user ml-1 text-green-400"></i> Username
+                    </label>
+                    <input type="text" id="username" placeholder="Choose a unique username" 
+                           class="w-full p-3 rounded-xl bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white placeholder-gray-400 transition input-focus">
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">
+                        <i class="fas fa-envelope ml-1 text-green-400"></i> Email Address
+                    </label>
+                    <input type="email" id="email" required placeholder="you@example.com" 
+                           class="w-full p-3 rounded-xl bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white placeholder-gray-400 transition input-focus">
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">
+                        <i class="fas fa-lock ml-1 text-green-400"></i> Password
+                    </label>
+                    <input type="password" id="password" required placeholder="••••••••" 
+                           class="w-full p-3 rounded-xl bg-gray-700 border border-gray-600 focus:border-green-500 outline-none text-white placeholder-gray-400 transition input-focus">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" 
+                        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 rounded-xl transition transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2 text-lg">
+                    <i class="fas fa-arrow-right-to-bracket"></i>
+                    <span>Sign In</span>
+                </button>
+            </form>
+
+            <!-- Toggle between Login & Signup -->
+            <div class="mt-6 text-center">
+                <button id="toggleAuth" class="text-sm text-gray-400 hover:text-green-400 transition flex items-center justify-center gap-2 mx-auto">
+                    <i class="fas fa-exchange-alt text-xs"></i>
+                    <span>Don't have an account? Create one</span>
+                </button>
+            </div>
+
+            <!-- Additional info (faucet tip) -->
+            <div class="mt-6 pt-4 border-t border-gray-700/50 text-center">
+                <p class="text-xs text-gray-500">
+                    <i class="fas fa-shield-alt text-green-500/70"></i> Secure authentication • Instant payouts
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer note -->
+        <p class="text-center text-gray-500 text-xs mt-6">
+            By continuing, you agree to BitQuest's <a href="terms.html" class="text-green-400 hover:underline">Terms</a>
+        </p>
     </div>
 
     <script>
-        // --- 1. إعدادات سوبابيز (حط بياناتك هنا) ---
-        // js/supabase-config.js
-const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
+        // ===================== SUPABASE CONFIGURATION (SAME AS ORIGINAL - NO CHANGES) =====================
+        const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- 2. عناصر الصفحة ---
+        // --- DOM Elements ---
         const authForm = document.getElementById('authForm');
         const toggleBtn = document.getElementById('toggleAuth');
         const usernameField = document.getElementById('usernameField');
         const authTitle = document.getElementById('authTitle');
+        const authSubtitle = document.getElementById('authSubtitle');
         const submitBtn = document.getElementById('submitBtn');
+        const authIcon = document.getElementById('authIcon');
 
         let isSignUp = false;
 
-        // --- 3. منطق التبديل بين الدخول والتسجيل ---
-        toggleBtn.onclick = () => {
-            isSignUp = !isSignUp;
-            authTitle.innerText = isSignUp ? "إنشاء حساب جديد" : "تسجيل الدخول";
-            submitBtn.innerText = isSignUp ? "تسجيل" : "دخول";
-            usernameField.classList.toggle('hidden');
-            toggleBtn.innerText = isSignUp ? "لديك حساب بالفعل؟ سجل دخولك" : "ليس لديك حساب؟ إنشاء حساب جديد";
+        // --- Toggle logic between Login and Signup with dynamic UI & matching new design language ---
+        const updateUIForMode = () => {
+            if (isSignUp) {
+                authTitle.innerText = "Join BitQuest";
+                authSubtitle.innerText = "Start earning crypto today — free";
+                submitBtn.innerHTML = '<i class="fas fa-user-plus"></i><span>Create Account</span>';
+                authIcon.className = "fas fa-user-plus text-green-400 text-2xl";
+                usernameField.classList.remove('hidden');
+                toggleBtn.innerHTML = '<i class="fas fa-sign-in-alt text-xs ml-1"></i><span>Already have an account? Sign In</span>';
+            } else {
+                authTitle.innerText = "Welcome Back";
+                authSubtitle.innerText = "Sign in to continue earning";
+                submitBtn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i><span>Sign In</span>';
+                authIcon.className = "fas fa-sign-in-alt text-green-400 text-2xl";
+                usernameField.classList.add('hidden');
+                toggleBtn.innerHTML = '<i class="fas fa-exchange-alt text-xs ml-1"></i><span>Don\'t have an account? Create one</span>';
+            }
         };
 
-        // --- 4. معالجة الفورم ---
+        toggleBtn.onclick = () => {
+            isSignUp = !isSignUp;
+            updateUIForMode();
+        };
+
+        // --- Form Submission (Supabase logic exactly preserved, only enhanced redirection and messaging to match BitQuest style) ---
         authForm.onsubmit = async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
+
+            // Basic validation
+            if (!email || !password) {
+                alert("Please provide both email and password.");
+                return;
+            }
+            if (isSignUp && !username) {
+                alert("Please choose a username to complete registration.");
+                return;
+            }
 
             try {
                 if (isSignUp) {
-                    // إنشاء حساب جديد
+                    // --- SIGN UP flow (original supabase signup with metadata) ---
                     const { data, error } = await supabaseClient.auth.signUp({
                         email,
                         password,
                         options: { 
                             data: { display_name: username },
-                            emailRedirectTo: window.location.origin // يرجعك للموقع بعد التفعيل
+                            emailRedirectTo: window.location.origin
                         }
                     });
                     if (error) throw error;
-                    alert("تم التسجيل بنجاح! افحص بريدك لتفعيل الحساب.");
+                    
+                    // Custom success alert with modern style (standard alert but friendly)
+                    alert("🎉 Registration successful! Please check your email inbox to confirm your account. After verification, log in to start earning crypto.");
+                    
+                    // Auto switch to login mode after signup attempt (UX improvement)
+                    isSignUp = false;
+                    updateUIForMode();
+                    document.getElementById('email').value = '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('username').value = '';
+                    
                 } else {
-                    // تسجيل دخول
+                    // --- LOGIN flow (original supabase signInWithPassword) ---
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     
-                    // تحويل لصفحة الداشبورد بعد النجاح
-                    window.location.href = 'dashboard.html'; 
+                    // On success, redirect to dashboard (exactly same as original target)
+                    window.location.href = 'dashboard.html';
                 }
             } catch (err) {
-                alert("حدث خطأ: " + err.message);
+                // Display error message gracefully (keeping original error handling but more descriptive)
+                let errorMsg = err.message;
+                if (errorMsg.includes("Invalid login credentials")) {
+                    errorMsg = "Invalid email or password. Please try again.";
+                } else if (errorMsg.includes("Email not confirmed")) {
+                    errorMsg = "Please verify your email address before logging in. Check your inbox (and spam folder).";
+                }
+                alert("❌ " + errorMsg);
             }
         };
+
+        // Initialize correct UI state (login default)
+        updateUIForMode();
+
+        // Optional: Add floating label effect or just extra polish - no functional changes.
+        // Also all Supabase endpoints and keys remain untouched as required.
     </script>
 </body>
 </html>

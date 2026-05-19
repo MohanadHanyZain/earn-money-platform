@@ -1,43 +1,124 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاهدة إعلانات PTC - منصة الأرباح</title>
+    <title>BitQuest - PTC Ads | Earn Points Watching Ads</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        }
+        .nav-blur {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .ad-card {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            transition: all 0.2s ease;
+        }
+        .ad-card:hover {
+            border-color: rgba(74, 222, 128, 0.5);
+            transform: translateY(-2px);
+        }
+        .active-section {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.95), rgba(17, 24, 39, 0.95));
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(74, 222, 128, 0.5);
+            animation: pulse-border 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(74, 222, 128, 0.3); }
+            50% { border-color: rgba(74, 222, 128, 0.8); }
+        }
+        .timer-number {
+            text-shadow: 0 0 10px #4ade80;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen font-sans">
+<body class="min-h-screen font-sans">
 
-    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center px-6 shadow-md">
-        <div class="flex items-center gap-4">
-            <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ العودة للرئيسية</a>
-            <h1 class="text-xl font-bold text-green-400">👁️ إعلانات PTC اليومية</h1>
+    <!-- Navbar (BitQuest unified style) -->
+    <nav class="nav-blur border-b border-gray-700 p-4 flex flex-wrap justify-between items-center px-6 shadow-lg sticky top-0 z-50 gap-3">
+        <div class="flex items-center gap-3">
+            <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition flex items-center gap-1 bg-gray-800/50 px-3 py-1.5 rounded-lg text-sm">
+                <i class="fas fa-arrow-right text-xs"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-dragon text-green-400 text-xl"></i>
+                <h1 class="text-xl font-black text-white">Bit<span class="text-green-400">Quest</span></h1>
+            </div>
         </div>
-        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700 text-sm">
-            رصيدك الحالي: <span id="userPoints" class="text-green-400 font-bold">0</span> نقطة
+        <div class="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-700 shadow-md">
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fas fa-coins text-green-400"></i>
+                <span class="text-gray-300">Your balance:</span>
+                <span id="userPoints" class="text-green-400 font-black text-lg">0</span>
+                <span class="text-gray-400 text-xs">points</span>
+            </div>
         </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto p-6 mt-6">
+    <div class="max-w-5xl mx-auto p-6 mt-6">
         
-        <div id="activeAdSection" class="hidden bg-gray-800 p-6 rounded-xl border border-blue-500/50 text-center mb-8 shadow-xl">
-            <p class="text-yellow-400 text-base font-bold mb-2">⚠️ تنبيه هام: برجاء عدم إغلاق صفحة الإعلان المفتوحة حتى ينتهي العداد!</p>
-            <div class="text-gray-400 text-sm mb-3">متبقي على تأكيد المكافأة:</div>
-            <div id="countdownTimer" class="text-5xl font-black text-blue-400 my-2">30</div>
+        <!-- Active Ad Section (shown when an ad is being watched) -->
+        <div id="activeAdSection" class="hidden active-section rounded-2xl p-6 text-center mb-8 shadow-2xl transition-all duration-300">
+            <div class="flex justify-center mb-3">
+                <div class="bg-green-500/20 p-3 rounded-full">
+                    <i class="fas fa-hourglass-half text-green-400 text-3xl animate-pulse"></i>
+                </div>
+            </div>
+            <p class="text-yellow-400 text-base font-bold mb-2 flex items-center justify-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Important: Do not close the ad page until timer finishes!</span>
+            </p>
+            <p class="text-gray-300 text-sm mb-3">Time remaining to confirm reward:</p>
+            <div id="countdownTimer" class="text-6xl md:text-7xl font-black text-green-400 my-3 timer-number font-mono">30</div>
+            <div class="text-gray-500 text-xs mb-4">seconds</div>
             
-            <button id="confirmClaimBtn" class="hidden mx-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black px-8 py-3 rounded-lg transition transform hover:scale-105 shadow-lg mt-4">
-                ✅ تأكيد المشاهدة والحصول على النقاط
+            <button id="confirmClaimBtn" class="hidden mx-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-8 py-3 rounded-xl transition transform hover:scale-105 shadow-lg mt-2 flex items-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                <span>Confirm Watch & Claim Points</span>
             </button>
         </div>
 
-        <h2 class="text-lg font-bold mb-4 text-gray-400">الروابط المتاحة للشغل اليومي:</h2>
-        <div id="adsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div id="loadingText" class="text-center text-gray-500 col-span-full py-8">جاري تحميل روابط اليوم...</div>
+        <!-- Available Ads Header -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center gap-2 bg-green-500/10 px-4 py-1 rounded-full border border-green-500/30 mb-3">
+                <i class="fas fa-calendar-day text-green-400 text-xs"></i>
+                <span class="text-green-300 text-xs font-semibold">Daily PTC Tasks</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white">📺 Available PTC Ads</h2>
+            <p class="text-gray-400 text-sm mt-2">Watch short ads and earn points — resets every 24 hours</p>
+        </div>
+
+        <!-- Ads Grid Container -->
+        <div id="adsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div id="loadingText" class="text-center text-gray-500 col-span-full py-12 flex flex-col items-center gap-3">
+                <i class="fas fa-spinner fa-pulse text-2xl text-green-400"></i>
+                <span>Loading available ads...</span>
+            </div>
+        </div>
+
+        <!-- Info Footer -->
+        <div class="mt-10 bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 text-center text-xs text-gray-500 flex flex-wrap justify-center gap-4">
+            <span><i class="fas fa-clock text-green-400 mr-1"></i> Each ad takes ~30 seconds</span>
+            <span><i class="fas fa-shield-alt text-green-400 mr-1"></i> One ad at a time</span>
+            <span><i class="fas fa-redo-alt text-green-400 mr-1"></i> Resets daily at midnight UTC</span>
         </div>
     </div>
 
+    <footer class="border-t border-gray-800 p-5 text-center text-gray-500 text-xs mt-8">
+        <p>© 2025 BitQuest PTC — Watch, Earn, Repeat</p>
+    </footer>
+
     <script>
+        // ==================== SUPABASE CONFIGURATION (PRESERVED ORIGINAL) ====================
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -45,7 +126,9 @@
         let userId = null;
         let activeAdId = null;
         let timerInterval = null;
+        let currentAdUrl = null;
 
+        // --- Check authenticated user and load points ---
         async function checkUser() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) {
@@ -54,21 +137,54 @@
             }
             userId = user.id;
             
-            const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', userId).single();
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('points')
+                .eq('id', userId)
+                .single();
+                
             if (profile) {
                 document.getElementById('userPoints').innerText = profile.points || 0;
             }
             
+            // Subscribe to realtime points updates
+            subscribeToPoints();
             loadAvailableAds();
         }
 
+        // Realtime points subscription
+        function subscribeToPoints() {
+            supabaseClient
+                .channel('realtime:ptc_points')
+                .on('postgres_changes', { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'profiles',
+                    filter: `id=eq.${userId}` 
+                }, payload => {
+                    if (payload.new && payload.new.points !== undefined) {
+                        const pointsSpan = document.getElementById('userPoints');
+                        pointsSpan.innerText = payload.new.points;
+                        pointsSpan.classList.add('text-green-300', 'scale-110');
+                        setTimeout(() => {
+                            pointsSpan.classList.remove('text-green-300', 'scale-110');
+                        }, 300);
+                    }
+                })
+                .subscribe();
+        }
+
+        // --- Load available PTC ads (excluding watched in last 24h) ---
         async function loadAvailableAds() {
             try {
-                // 1. جلب الـ 50 رابط أو كل الروابط الموجودة بجدول ptc_ads
-                const { data: allAds, error: fetchError } = await supabaseClient.from('ptc_ads').select('*');
+                // Fetch all PTC ads from database
+                const { data: allAds, error: fetchError } = await supabaseClient
+                    .from('ptc_ads')
+                    .select('*');
+                    
                 if (fetchError) throw fetchError;
                 
-                // 2. جلب الروابط التي شاهدها العضو في آخر 24 ساعة فقط
+                // Fetch ads watched in last 24 hours
                 const timeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
                 const { data: watchedAds } = await supabaseClient
                     .from('ptc_history')
@@ -79,83 +195,129 @@
                 const watchedIds = watchedAds ? watchedAds.map(item => item.ad_id) : [];
                 const adsContainer = document.getElementById('adsContainer');
                 
-                if (document.getElementById('loadingText')) document.getElementById('loadingText').classList.add('hidden');
+                // Remove loading indicator
+                const loadingDiv = document.getElementById('loadingText');
+                if (loadingDiv) loadingDiv.remove();
                 adsContainer.innerHTML = ''; 
 
-                // 3. فلترة الروابط: أي رابط تم مشاهدته في الـ 24 ساعة الماضية يتم إخفاؤه تلقائياً
+                // Filter available ads (not watched in last 24h)
                 const availableAds = allAds ? allAds.filter(ad => !watchedIds.includes(ad.id)) : [];
 
                 if (availableAds.length === 0) {
-                    adsContainer.innerHTML = `<div class="text-center text-gray-500 col-span-full py-8">🎉 لقد أنهيت جميع روابط اليوم بنجاح! ستتجدد الروابط لك تلقائياً بعد مرور 24 ساعة من تاريخ مشاهدتها.</div>`;
+                    adsContainer.innerHTML = `
+                        <div class="col-span-full text-center py-12 bg-gray-800/40 rounded-xl border border-gray-700">
+                            <i class="fas fa-check-circle text-green-400 text-4xl mb-3 block"></i>
+                            <h3 class="text-xl font-bold text-white mb-1">All Done Today! 🎉</h3>
+                            <p class="text-gray-400 text-sm">You've completed all PTC ads for today.<br>Come back tomorrow for more rewards!</p>
+                        </div>
+                    `;
                     return;
                 }
 
-                // عرض الروابط غير المشاهدة فقط
+                // Render each available ad
                 availableAds.forEach(ad => {
                     const card = document.createElement('div');
-                    card.className = "bg-gray-800 p-5 rounded-xl border border-gray-700 flex justify-between items-center shadow-md";
+                    card.className = "ad-card rounded-xl p-5 border border-gray-700 flex justify-between items-center shadow-md transition-all";
+                    
+                    const duration = ad.duration || 30;
                     
                     card.innerHTML = `
-                        <div>
-                            <h3 class="font-bold text-white mb-1">${ad.title}</h3>
-                            <p class="text-xs text-gray-400 mb-2">مدة الانتظار: ${ad.duration || 30} ثانية</p>
-                            <div class="text-green-400 text-sm font-bold">💰 +${ad.reward_points} نقطة</div>
+                        <div class="flex items-center gap-3">
+                            <div class="bg-green-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-play-circle text-green-400 text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-lg">${escapeHtml(ad.title)}</h3>
+                                <div class="flex items-center gap-3 mt-1 flex-wrap">
+                                    <span class="text-gray-400 text-xs flex items-center gap-1">
+                                        <i class="far fa-clock"></i> ${duration} sec
+                                    </span>
+                                    <span class="text-green-400 text-sm font-bold">💰 +${ad.reward_points} points</span>
+                                </div>
+                            </div>
                         </div>
-                        <a href="${ad.adsterra_url}" target="_blank" rel="noopener noreferrer" class="watch-link bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition transform hover:scale-105 shadow-md inline-block text-center">
-                            شاهد الآن 👁️
-                        </a>
+                        <button class="watch-btn bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition shadow-md flex items-center gap-2">
+                            <i class="fas fa-eye"></i>
+                            <span>Watch Now</span>
+                        </button>
                     `;
 
-                    card.querySelector('.watch-link').onclick = (e) => {
+                    const watchBtn = card.querySelector('.watch-btn');
+                    watchBtn.onclick = (e) => {
+                        e.preventDefault();
                         if (activeAdId) {
-                            e.preventDefault(); 
-                            alert("يرجى إنهاء الرابط الحالي أولاً!");
+                            showToast("Please finish the current ad first!", "warning");
                             return;
                         }
-                        startTimer(ad.id, ad.duration || 30);
+                        // Store ad URL and start timer
+                        currentAdUrl = ad.adsterra_url;
+                        startTimer(ad.id, duration, ad.reward_points);
+                        // Open ad in new tab
+                        window.open(ad.adsterra_url, '_blank');
                     };
 
                     adsContainer.appendChild(card);
                 });
 
             } catch (err) {
-                console.error("حدث خطأ:", err);
+                console.error("Error loading ads:", err);
+                const adsContainer = document.getElementById('adsContainer');
+                const loadingDiv = document.getElementById('loadingText');
+                if (loadingDiv) loadingDiv.remove();
+                adsContainer.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-red-900/20 rounded-xl border border-red-700/50">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-2 block"></i>
+                        <p class="text-red-300">Failed to load ads. Please refresh the page.</p>
+                    </div>
+                `;
             }
         }
 
-        function startTimer(adId, duration) {
+        // --- Start countdown timer for active ad ---
+        function startTimer(adId, duration, rewardPoints) {
             activeAdId = adId;
             const activeAdSection = document.getElementById('activeAdSection');
             const timerEl = document.getElementById('countdownTimer');
             const confirmBtn = document.getElementById('confirmClaimBtn');
             
             activeAdSection.classList.remove('hidden');
-            confirmBtn.classList.add('hidden'); 
+            confirmBtn.classList.add('hidden');
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = "✅ Confirm Watch & Claim Points";
             
             let timeLeft = duration;
             timerEl.innerText = timeLeft;
 
+            if (timerInterval) clearInterval(timerInterval);
+            
             timerInterval = setInterval(() => {
                 timeLeft--;
-                timerEl.innerText = timeLeft;
+                timerEl.innerText = timeLeft >= 0 ? timeLeft : 0;
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
                     timerEl.innerText = "✓";
-                    confirmBtn.classList.remove('hidden'); 
+                    confirmBtn.classList.remove('hidden');
+                    
+                    // Add animation to confirm button
+                    confirmBtn.classList.add('animate-pulse');
+                    setTimeout(() => confirmBtn.classList.remove('animate-pulse'), 1000);
                 }
             }, 1000);
         }
 
+        // --- Confirm ad watch and claim reward via RPC (original preserved) ---
         document.getElementById('confirmClaimBtn').onclick = async (e) => {
             e.preventDefault();
             if (!activeAdId || !userId) return;
 
             const confirmBtn = document.getElementById('confirmClaimBtn');
             confirmBtn.disabled = true;
-            confirmBtn.innerText = "جاري التأكيد وإضافة النقاط... ⏳";
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span> Processing...</span>';
 
             try {
+                // Call Supabase RPC function (preserved original logic)
                 const { error } = await supabaseClient.rpc('claim_ptc_reward', {
                     _user_id: userId,
                     _ad_id: parseInt(activeAdId)
@@ -163,24 +325,82 @@
 
                 if (error) throw new Error(error.message);
 
-                alert("🎉 ممتاز! تم تأكيد المشاهدة بنجاح وإضافة النقاط.");
+                showToast("🎉 Ad watched successfully! Points added to your balance.", "success");
                 
-                clearInterval(timerInterval);
-                activeAdId = null;
+                // Clean up timer and UI
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                
+                // Hide active section
                 document.getElementById('activeAdSection').classList.add('hidden');
-                await checkUser();
+                
+                // Refresh user points and reload available ads
+                await refreshUserPoints();
+                await loadAvailableAds();
+                
+                activeAdId = null;
+                currentAdUrl = null;
 
             } catch (err) {
-                alert("خطأ: " + err.message);
-                clearInterval(timerInterval);
-                activeAdId = null;
+                console.error("Claim error:", err);
+                showToast("Error: " + err.message, "error");
+                
+                // Reset UI on error
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
                 document.getElementById('activeAdSection').classList.add('hidden');
+                activeAdId = null;
             } finally {
                 confirmBtn.disabled = false;
-                confirmBtn.innerText = "✅ تأكيد المشاهدة والحصول على النقاط";
+                confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Confirm Watch & Claim Points</span>';
             }
         };
 
+        // Refresh user points from database
+        async function refreshUserPoints() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('points')
+                .eq('id', userId)
+                .single();
+                
+            if (profile) {
+                document.getElementById('userPoints').innerText = profile.points || 0;
+            }
+        }
+
+        // Toast notification helper
+        function showToast(message, type = "info") {
+            const toast = document.createElement('div');
+            const bgColor = type === "success" ? "border-green-500" : (type === "warning" ? "border-yellow-500" : "border-red-500");
+            const icon = type === "success" ? "fa-check-circle" : (type === "warning" ? "fa-exclamation-triangle" : "fa-times-circle");
+            const iconColor = type === "success" ? "text-green-400" : (type === "warning" ? "text-yellow-400" : "text-red-400");
+            
+            toast.className = `fixed bottom-5 right-5 z-50 bg-gray-800 border-l-4 ${bgColor} text-white px-5 py-3 rounded-lg shadow-2xl text-sm font-medium flex items-center gap-2 animate-bounce`;
+            toast.innerHTML = `<i class="fas ${icon} ${iconColor}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3500);
+        }
+
+        // Escape HTML helper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Initialize page
         checkUser();
     </script>
 </body>

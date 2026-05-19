@@ -1,148 +1,325 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جدار اختصار الروابط - ShrinkMe</title>
+    <title>BitQuest - Shortlinks Hub | Earn Daily Points</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        }
+        .nav-blur {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .link-card {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            transition: all 0.2s ease;
+        }
+        .link-card:hover {
+            border-color: rgba(74, 222, 128, 0.5);
+            transform: translateY(-2px);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0px rgba(74,222,128,0); }
+            50% { box-shadow: 0 0 12px rgba(74,222,128,0.4); }
+        }
+        .claim-animation {
+            animation: pulse-glow 0.5s ease;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen font-sans">
+<body class="min-h-screen font-sans">
 
-    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center px-6 shadow-md">
-        <h1 class="text-xl font-bold text-blue-400">🔗 مهام ShrinkMe اليومية</h1>
-        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700 text-sm">
-            رصيدك: <span id="userPoints" class="text-green-400 font-bold">0</span> نقطة
+    <!-- Navbar (BitQuest unified style) -->
+    <nav class="nav-blur border-b border-gray-700 p-4 flex flex-wrap justify-between items-center px-6 shadow-lg sticky top-0 z-50 gap-3">
+        <div class="flex items-center gap-3">
+            <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition flex items-center gap-1 bg-gray-800/50 px-3 py-1.5 rounded-lg text-sm">
+                <i class="fas fa-arrow-right text-xs"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-dragon text-green-400 text-xl"></i>
+                <h1 class="text-xl font-black text-white">Bit<span class="text-green-400">Quest</span></h1>
+            </div>
+        </div>
+        <div class="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-700 shadow-md">
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fas fa-coins text-green-400"></i>
+                <span class="text-gray-300">Your balance:</span>
+                <span id="userPoints" class="text-green-400 font-black text-lg">0</span>
+                <span class="text-gray-400 text-xs">points</span>
+            </div>
         </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto p-6 mt-6">
-        <h2 class="text-lg font-bold mb-4 text-gray-400">الروابط المتاحة (تتجدد تلقائياً كل 24 ساعة):</h2>
-        <div id="linksContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div id="loadingText" class="text-center text-gray-500 col-span-full py-8">جاري جلب الروابط...</div>
+    <div class="max-w-5xl mx-auto p-6 mt-6">
+        <!-- Hero Section -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 bg-green-500/10 px-4 py-1 rounded-full border border-green-500/30 mb-3">
+                <i class="fas fa-calendar-day text-green-400 text-xs"></i>
+                <span class="text-green-300 text-xs font-semibold">Daily Tasks</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white">🔗 Shortlink Tasks</h2>
+            <p class="text-gray-400 text-sm mt-2">Complete daily shortcuts and earn points — resets every 24 hours</p>
+        </div>
+
+        <!-- Links Container Grid -->
+        <div id="linksContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div id="loadingText" class="text-center text-gray-500 col-span-full py-12 flex flex-col items-center gap-3">
+                <i class="fas fa-spinner fa-pulse text-2xl text-blue-400"></i>
+                <span>Loading available links...</span>
+            </div>
+        </div>
+
+        <!-- Info Footer -->
+        <div class="mt-10 bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 text-center text-xs text-gray-500 flex flex-wrap justify-center gap-4">
+            <span><i class="fas fa-sync-alt text-green-400 mr-1"></i> Resets daily at midnight UTC</span>
+            <span><i class="fas fa-shield-alt text-blue-400 mr-1"></i> Secure link tracking</span>
+            <span><i class="fas fa-gem text-yellow-500 mr-1"></i> Instant points after completion</span>
         </div>
     </div>
 
+    <footer class="border-t border-gray-800 p-5 text-center text-gray-500 text-xs mt-8">
+        <p>© 2025 BitQuest — Earn crypto with shortlinks & offers</p>
+    </footer>
+
     <script>
+        // ==================== SUPABASE CONFIGURATION (PRESERVED ORIGINAL KEYS & LOGIC) ====================
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let userId = null;
 
+        // --- Check authenticated user and load initial points ---
         async function checkUser() {
             const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) { window.location.href = 'auth.html'; return; }
+            if (!user) { 
+                window.location.href = 'auth.html'; 
+                return; 
+            }
             userId = user.id;
             
-            const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', userId).single();
-            if (profile) document.getElementById('userPoints').innerText = profile.points || 0;
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('points')
+                .eq('id', userId)
+                .single();
+                
+            if (profile) {
+                document.getElementById('userPoints').innerText = profile.points || 0;
+            }
             
             loadShortLinks();
+            
+            // Subscribe to realtime points updates
+            subscribeToPoints();
         }
 
+        // Realtime points subscription to keep balance updated
+        function subscribeToPoints() {
+            supabaseClient
+                .channel('realtime:shortlinks_points')
+                .on('postgres_changes', { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'profiles',
+                    filter: `id=eq.${userId}` 
+                }, payload => {
+                    if (payload.new && payload.new.points !== undefined) {
+                        document.getElementById('userPoints').innerText = payload.new.points;
+                        // Add visual feedback
+                        const pointsSpan = document.getElementById('userPoints');
+                        pointsSpan.classList.add('text-green-300', 'scale-110');
+                        setTimeout(() => {
+                            pointsSpan.classList.remove('text-green-300', 'scale-110');
+                        }, 300);
+                    }
+                })
+                .subscribe();
+        }
+
+        // --- Load available shortlinks (excluding already clicked in last 24h) ---
         async function loadShortLinks() {
             try {
-                const { data: allLinks } = await supabaseClient.from('available_links').select('*');
+                // Fetch all available links from DB
+                const { data: allLinks, error: linksError } = await supabaseClient
+                    .from('available_links')
+                    .select('*');
                 
+                if (linksError) throw linksError;
+
+                // Fetch user clicks from last 24 hours
                 const timeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-                const { data: clickedRecords } = await supabaseClient
+                const { data: clickedRecords, error: clicksError } = await supabaseClient
                     .from('user_clicks')
                     .select('link_id')
                     .eq('user_id', userId)
                     .gt('clicked_at', timeLimit);
 
+                if (clicksError) throw clicksError;
+
                 const clickedIds = clickedRecords ? clickedRecords.map(item => item.link_id) : [];
                 const container = document.getElementById('linksContainer');
                 
-                if (document.getElementById('loadingText')) document.getElementById('loadingText').remove();
+                // Remove loading indicator
+                const loadingDiv = document.getElementById('loadingText');
+                if (loadingDiv) loadingDiv.remove();
+                
                 container.innerHTML = '';
 
-                const available = allLinks ? allLinks.filter(l => !clickedIds.includes(l.id)) : [];
+                // Filter available (not clicked within 24h)
+                const available = allLinks ? allLinks.filter(link => !clickedIds.includes(link.id)) : [];
 
                 if (available.length === 0) {
-                    container.innerHTML = `<div class="text-center text-gray-500 col-span-full py-8">🎉 ممتاز! لقد أنهيت جميع مهام الاختصار لليوم.</div>`;
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12 bg-gray-800/40 rounded-xl border border-gray-700">
+                            <i class="fas fa-check-circle text-green-400 text-4xl mb-3 block"></i>
+                            <h3 class="text-xl font-bold text-white mb-1">All Done! 🎉</h3>
+                            <p class="text-gray-400 text-sm">You've completed all shortlink tasks for today.<br>Come back tomorrow for more points!</p>
+                        </div>
+                    `;
                     return;
                 }
 
+                // Render each available link card
                 available.forEach(link => {
                     const card = document.createElement('div');
-                    card.className = "bg-gray-800 p-5 rounded-xl border border-gray-700 flex justify-between items-center shadow-md";
+                    card.className = "link-card rounded-xl p-5 border border-gray-700 flex justify-between items-center shadow-md transition-all";
                     
                     card.innerHTML = `
-                        <div>
-                            <h3 class="font-bold text-white mb-1">${link.provider_name}</h3>
-                            <div class="text-green-400 text-sm font-bold">💰 +${link.points_reward} نقطة</div>
+                        <div class="flex items-center gap-3">
+                            <div class="bg-green-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-link text-green-400 text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-lg">${escapeHtml(link.provider_name)}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-green-400 text-sm font-bold">💰 +${link.points_reward} points</span>
+                                </div>
+                            </div>
                         </div>
-                        <button class="claim-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition text-center shadow">
-                            اختصار الآن 🔗
+                        <button class="claim-btn bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition shadow-md flex items-center gap-2">
+                            <i class="fas fa-scissors"></i>
+                            <span>Shorten & Earn</span>
                         </button>
                     `;
 
-                    card.querySelector('.claim-btn').onclick = async (e) => {
-    const btn = e.target;
-    
-    // التأكد أولاً من أن المستخدم مسجل دخول ومعرفه موجود
-    if (!userId) {
-        alert("برجاء تسجيل الدخول أولاً!");
-        window.location.href = 'auth.html';
-        return;
-    }
+                    // Attach click handler with original API logic (preserved)
+                    const claimBtn = card.querySelector('.claim-btn');
+                    claimBtn.onclick = async (e) => {
+                        const btn = e.currentTarget;
+                        
+                        if (!userId) {
+                            alert("Please login first!");
+                            window.location.href = 'auth.html';
+                            return;
+                        }
 
-    btn.disabled = true;
-    btn.innerText = "جاري تجهيز الرابط... ⏳";
-
-    try {
-        // دمج الـ userId الحقيقي والـ UUID في نهاية الرابط بشكل صحيح وقاطع
-        const apiUrl = link.short_url + userId;
-        
-        // جلب الرابط المختصر خلف الكواليس
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-
-        if (data.status === "success" && data.shortenedUrl) {
-            
-            // 1. تسجيل النقرة في سوبابيز لحظر الرابط مؤقتاً
-            const { error: rpcError } = await supabaseClient.rpc('register_link_click', {
-                _user_id: userId,
-                _link_id: link.id
-            });
-
-            if (rpcError) {
-                alert(rpcError.message);
-                btn.disabled = false;
-                btn.innerText = "اختصار الآن 🔗";
-                return;
-            }
-
-            // 2. الحل السحري: فتح الرابط المختصر الفعلي الناتج (وليس رابط الـ API الأسود!)
-            window.open(data.shortenedUrl, '_blank');
-            
-            // إعادة تحديث القائمة لإخفاء الرابط المفتوح
-            setTimeout(() => { loadShortLinks(); }, 1000);
-
-        } else {
-            alert("حدث خطأ في موقع الاختصار، برجاء المحاولة لاحقاً.");
-            btn.disabled = false;
-            btn.innerText = "اختصار الآن 🔗";
-        }
-
-    } catch (err) {
-        console.error(err);
-        alert("فشل الاتصال بموقع الاختصار، تأكد من جودة الإنترنت.");
-        btn.disabled = false;
-        btn.innerText = "اختصار الآن 🔗";
-    }
-};
-
+                        // Disable button and show loading state
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Processing...</span>';
+                        
+                        try {
+                            // Construct API URL with user ID (original logic)
+                            const apiUrl = link.short_url + userId;
+                            
+                            // Fetch shortened URL from external API
+                            const response = await fetch(apiUrl);
+                            const data = await response.json();
+                            
+                            if (data.status === "success" && data.shortenedUrl) {
+                                
+                                // 1. Register click in Supabase via RPC (original preserved)
+                                const { error: rpcError } = await supabaseClient.rpc('register_link_click', {
+                                    _user_id: userId,
+                                    _link_id: link.id
+                                });
+                                
+                                if (rpcError) {
+                                    console.error("RPC Error:", rpcError);
+                                    alert("Failed to register click. Please try again.");
+                                    btn.disabled = false;
+                                    btn.innerHTML = '<i class="fas fa-scissors"></i><span>Shorten & Earn</span>';
+                                    return;
+                                }
+                                
+                                // 2. Open the actual shortened URL in new tab
+                                window.open(data.shortenedUrl, '_blank');
+                                
+                                // 3. Show success toast and refresh points & link list
+                                showSuccessToast(`+${link.points_reward} points earned!`);
+                                
+                                // Update points display immediately (optimistic update)
+                                const currentPoints = parseInt(document.getElementById('userPoints').innerText) || 0;
+                                document.getElementById('userPoints').innerText = currentPoints + link.points_reward;
+                                
+                                // Refresh the links list to remove completed link
+                                setTimeout(() => { 
+                                    loadShortLinks(); 
+                                }, 1000);
+                                
+                            } else {
+                                alert("Shortlink service error. Please try again later.");
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="fas fa-scissors"></i><span>Shorten & Earn</span>';
+                            }
+                            
+                        } catch (err) {
+                            console.error("Shortlink Error:", err);
+                            alert("Connection failed. Check your internet and try again.");
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-scissors"></i><span>Shorten & Earn</span>';
+                        }
+                    };
+                    
                     container.appendChild(card);
                 });
 
             } catch (err) {
-                console.error(err);
+                console.error("Load Links Error:", err);
+                const container = document.getElementById('linksContainer');
+                const loadingDiv = document.getElementById('loadingText');
+                if (loadingDiv) loadingDiv.remove();
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-red-900/20 rounded-xl border border-red-700/50">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-2 block"></i>
+                        <p class="text-red-300">Failed to load shortlinks. Please refresh the page.</p>
+                    </div>
+                `;
             }
         }
 
+        // Helper: simple toast notification
+        function showSuccessToast(message) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 z-50 bg-gray-800 border-l-4 border-green-500 text-white px-5 py-3 rounded-lg shadow-2xl text-sm font-medium flex items-center gap-2 animate-bounce";
+            toast.innerHTML = `<i class="fas fa-check-circle text-green-400"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Simple XSS protection helper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Start the app
         checkUser();
     </script>
 </body>

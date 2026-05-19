@@ -1,69 +1,157 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - أرباحي</title>
+    <title>BitQuest Dashboard - Earn Crypto & Track Points</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        }
+        .points-card {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            transition: all 0.2s ease;
+        }
+        .nav-blur {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 0px #4ade80; }
+            50% { text-shadow: 0 0 15px #4ade80; }
+        }
+        .animate-pulse-points {
+            animation: pulse-glow 0.5s ease-in-out;
+        }
+        .feature-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .feature-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.4);
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="min-h-screen font-sans">
 
-    <!-- شريط التنقل (Navbar) -->
-    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-green-400">منصة الأرباح</h1>
-        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-4 py-1 rounded text-sm transition">تسجيل خروج</button>
+    <!-- Navbar (BitQuest style) -->
+    <nav class="nav-blur border-b border-gray-700 p-4 flex justify-between items-center px-6 shadow-lg sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-dragon text-green-400 text-xl"></i>
+            <h1 class="text-xl font-black tracking-wide text-white">Bit<span class="text-green-400">Quest</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="hidden sm:flex items-center gap-1 text-gray-400 text-sm bg-gray-800/50 px-3 py-1 rounded-full">
+                <i class="fas fa-wallet text-green-400 text-xs"></i>
+                <span>Earn Points</span>
+            </div>
+            <button id="logoutBtn" class="bg-red-500/90 hover:bg-red-600 px-5 py-2 rounded-lg text-sm font-semibold transition shadow-md flex items-center gap-2">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto p-6">
-        <!-- رسالة الترحيب والكرت الأساسي -->
-        <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700 text-center mb-6">
-            <h2 class="text-2xl mb-2">أهلاً بك، <span id="userName" class="font-bold text-green-400">...</span></h2>
-            <p class="text-gray-400 mb-6">رصيدك الحالي من النقاط</p>
+    <div class="max-w-5xl mx-auto p-6 md:p-8">
+        <!-- Welcome Card & Points Section (modernized) -->
+        <div class="points-card rounded-2xl p-8 shadow-2xl border border-gray-700 text-center mb-8 bg-gradient-to-br from-gray-800/90 to-gray-800/70">
+            <div class="flex justify-center mb-3">
+                <div class="bg-green-500/20 p-2 rounded-full">
+                    <i class="fas fa-crown text-green-400 text-xl"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl md:text-3xl mb-2 font-bold">
+                Welcome back, <span id="userName" class="text-green-400 font-black">...</span>
+            </h2>
+            <p class="text-gray-400 mb-5">Your current point balance</p>
             
-            <div class="inline-block bg-gray-900 px-8 py-4 rounded-full border-2 border-green-500">
-                <span id="userPoints" class="text-5xl font-black text-green-500">0</span>
-                <span class="text-sm text-gray-400">نقطة</span>
+            <div class="inline-flex flex-col items-center">
+                <div class="bg-gray-900 px-8 py-5 rounded-2xl border-2 border-green-500 shadow-xl">
+                    <div class="flex items-baseline gap-2">
+                        <span id="userPoints" class="text-6xl md:text-7xl font-black text-green-500">0</span>
+                        <span class="text-md font-semibold text-gray-400">points</span>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-gray-500 flex items-center gap-1">
+                    <i class="fas fa-chart-line text-green-500/70"></i>
+                    <span>1,000 points = minimum withdrawal</span>
+                </div>
             </div>
         </div>
 
-        <!-- أزرار التنقل السريع المعدلة (3 أزرار متناسقة) -->
-        <!-- أزرار التنقل السريع المطورة (5 أزرار متناسقة ومقاومة للشاشات) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <a href="shortlinks.html" class="bg-blue-600 hover:bg-blue-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
-                <!-- <span>🚰</span>  -->
-                اختصار الروابط  
-                <!-- (كل 5 دقايق) -->
-            </a>
-            <!-- 1. صنبور الفوست (جديد) -->
-            <a href="faucet.html" class="bg-teal-600 hover:bg-teal-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
-                <!-- <span>🚰</span>  -->
-                صنبور الفوست 
-                <!-- (كل 5 دقايق) -->
-            </a>
+        <!-- Earning Methods Grid (5 consistent buttons matching original links but redesigned for BitQuest) -->
+        <div class="mb-8">
+            <div class="flex items-center justify-center gap-2 mb-5">
+                <i class="fas fa-bolt text-green-400 text-sm"></i>
+                <h3 class="text-gray-300 font-semibold text-center uppercase tracking-wide text-xs">Earning Hub</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Shortlinks (original link) -->
+                <a href="shortlinks.html" class="feature-btn bg-gradient-to-br from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 p-5 rounded-xl text-center font-bold transition shadow-lg flex flex-col items-center gap-2 border border-green-400/20">
+                    <i class="fas fa-link text-3xl text-white/90"></i>
+                    <span class="text-lg">Shortlinks</span>
+                    <span class="text-xs text-green-200">Earn every 5 min</span>
+                </a>
+                <!-- Faucet (new design) -->
+                <a href="faucet.html" class="feature-btn bg-gradient-to-br from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 p-5 rounded-xl text-center font-bold transition shadow-lg flex flex-col items-center gap-2 border border-green-400/20">
+                    <i class="fas fa-tint text-3xl text-white/90"></i>
+                    <span class="text-lg">Crypto Faucet</span>
+                    <span class="text-xs text-green-200">Claim every 5 min</span>
+                </a>
+                <!-- PTC Ads (new design) -->
+                <a href="ptc.html" class="feature-btn bg-gradient-to-br from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 p-5 rounded-xl text-center font-bold transition shadow-lg flex flex-col items-center gap-2 border border-green-400/20">
+                    <i class="fas fa-video text-3xl text-white/90"></i>
+                    <span class="text-lg">PTC Ads</span>
+                    <span class="text-xs text-green-200">Watch & earn</span>
+                </a>
+                <!-- Withdraw -->
+                <a href="withdraw.html" class="feature-btn bg-gradient-to-br from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 p-5 rounded-xl text-center font-bold transition shadow-lg flex flex-col items-center gap-2 border border-green-400/20">
+                    <i class="fas fa-money-bill-wave text-3xl text-white/90"></i>
+                    <span class="text-lg">Withdraw</span>
+                    <span class="text-xs text-green-200">To FaucetPay</span>
+                </a>
+                <!-- Extra Earning Bonus: Tasks/Surveys (optional but matches new sections from homepage, keeps cohesion) -->
+                <a href="tasks-offers.html" class="feature-btn bg-gradient-to-br from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 p-5 rounded-xl text-center font-bold transition shadow-lg flex flex-col items-center gap-2 border border-green-400/20">
+                    <i class="fas fa-tasks text-3xl text-white/90"></i>
+                    <span class="text-lg">Tasks & Offers</span>
+                    <span class="text-xs text-green-200">Bonus points</span>
+                </a>
+            </div>
+        </div>
 
-            <!-- 2. مشاهدة الإعلانات PTC (جديد) -->
-            <a href="ptc.html" class="bg-indigo-600 hover:bg-indigo-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg">
-                <!-- <span>👁️</span>  -->
-                مشاهدة إعلانات PTC
-            </a>
-
-            <!-- 5. سحب الأرباح (القديم) -->
-            <a href="withdraw.html" class="bg-purple-600 hover:bg-purple-700 p-6 rounded-lg text-center font-bold text-xl transition flex flex-col items-center justify-center gap-2 shadow-lg md:col-span-1 sm:col-span-2">
-                <!-- <span>💰</span>  -->
-                سحب الأرباح
-            </a>
+        <!-- Quick Stats or Info Card (additional boost) -->
+        <div class="bg-gray-800/40 rounded-xl p-4 border border-gray-700 flex flex-wrap justify-between items-center gap-3 text-sm">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-shield-alt text-green-400 text-sm"></i>
+                <span class="text-gray-300">Secure withdrawals · Instant points</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fab fa-whatsapp text-green-500"></i>
+                <a href="https://wa.me/20101016987179" target="_blank" class="text-green-400 hover:underline text-xs">Support 24/7</a>
+            </div>
+            <div class="text-gray-500 text-xs">
+                <i class="far fa-clock"></i> Last claim: real-time
+            </div>
         </div>
     </div>
 
+    <footer class="border-t border-gray-800 p-5 text-center text-gray-500 text-xs mt-8">
+        <p>© 2025 BitQuest — Your daily crypto earning companion</p>
+    </footer>
+
     <script>
-        // --- 1. إعدادات سوبابيز ---
+        // ==================== SUPABASE CONFIGURATION (PRESERVED 100% ORIGINAL LOGIC) ====================
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- 2. التحقق من الدخول وجلب البيانات ---
+        // --- Dashboard initialization & auth check ---
         async function initDashboard() {
             const { data: { user } } = await supabaseClient.auth.getUser();
 
@@ -72,22 +160,30 @@
                 return;
             }
 
-            document.getElementById('userName').innerText = user.user_metadata.display_name || "يا بطل";
+            // Display username from metadata or fallback
+            const displayName = user.user_metadata?.display_name || "Explorer";
+            document.getElementById('userName').innerText = displayName;
 
-            const { data: profile } = await supabaseClient
+            // Fetch user points from 'profiles' table
+            const { data: profile, error } = await supabaseClient
                 .from('profiles')
                 .select('points')
                 .eq('id', user.id)
                 .single();
 
-            if (profile) {
+            if (profile && profile.points !== undefined) {
                 document.getElementById('userPoints').innerText = profile.points;
+            } else if (error) {
+                console.warn("Profile not found, initializing points if needed");
+                // Fallback: if profile missing but we can show 0
+                document.getElementById('userPoints').innerText = '0';
             }
 
+            // Subscribe to realtime updates (original exact logic)
             subscribeToPoints(user.id);
         }
 
-        // --- 3. وظيفة التحديث اللحظي ---
+        // --- Realtime subscription (unchanged logic, added visual feedback) ---
         function subscribeToPoints(userId) {
             supabaseClient
                 .channel('realtime:points')
@@ -97,20 +193,38 @@
                     table: 'profiles',
                     filter: `id=eq.${userId}` 
                 }, payload => {
-                    document.getElementById('userPoints').innerText = payload.new.points;
-                    document.getElementById('userPoints').classList.add('animate-pulse');
-                    setTimeout(() => document.getElementById('userPoints').classList.remove('animate-pulse'), 1000);
+                    const pointsSpan = document.getElementById('userPoints');
+                    if (payload.new && payload.new.points !== undefined) {
+                        pointsSpan.innerText = payload.new.points;
+                        // Add pulse animation class (non-intrusive)
+                        pointsSpan.classList.add('animate-pulse-points');
+                        setTimeout(() => pointsSpan.classList.remove('animate-pulse-points'), 700);
+                    }
                 })
                 .subscribe();
         }
 
-        // --- 4. تسجيل الخروج ---
+        // --- Logout functionality ---
         document.getElementById('logoutBtn').onclick = async () => {
             await supabaseClient.auth.signOut();
             window.location.href = 'auth.html';
         };
 
+        // Start dashboard
         initDashboard();
+
+        // Add custom animation style dynamically (if not already present)
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = `
+            .animate-pulse-points {
+                animation: pulse-glow 0.5s ease-in-out;
+            }
+            @keyframes pulse-glow {
+                0%, 100% { text-shadow: 0 0 0px #4ade80; transform: scale(1); }
+                50% { text-shadow: 0 0 12px #4ade80; transform: scale(1.02); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
     </script>
 </body>
 </html>

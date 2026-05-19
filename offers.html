@@ -8,16 +8,33 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- نحتاج مكتبة jQuery لمعالجة طلب الـ JSON بسهولة كما في مثال CPAGrip -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        }
+        .nav-blur {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="text-white min-h-screen font-sans">
 
-    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-green-400">قسم العروض المباشرة</h1>
-        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white">العودة للوحة التحكم</a>
+    <nav class="nav-blur p-4 border-b border-gray-700 flex justify-between items-center px-6 shadow-lg sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-dragon text-green-400 text-xl"></i>
+            <h1 class="text-xl font-black text-white">Bit<span class="text-green-400">Quest</span></h1>
+        </div>
+        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-green-400 transition bg-gray-800/50 px-3 py-1.5 rounded-lg">العودة للوحة التحكم</a>
     </nav>
 
     <div class="max-w-4xl mx-auto p-6">
         <header class="mb-8 text-center">
+            <div class="inline-flex items-center gap-2 bg-green-500/10 px-4 py-1 rounded-full border border-green-500/30 mb-3">
+                <i class="fas fa-star text-green-400 text-xs"></i>
+                <span class="text-green-300 text-xs font-semibold">عروض مختارة</span>
+            </div>
             <h2 class="text-3xl font-bold mb-2">عروض مختارة لك</h2>
             <p class="text-gray-400">أكمل العروض أدناه للحصول على النقاط فوراً</p>
         </header>
@@ -25,9 +42,16 @@
         <!-- حاوية العروض -->
         <div id="offersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- رسالة تحميل مؤقتة -->
-            <div class="text-center col-span-full py-10 text-gray-500">جاري جلب أفضل العروض لبلدك...</div>
+            <div class="text-center col-span-full py-10 text-gray-500 flex flex-col items-center gap-2">
+                <i class="fas fa-spinner fa-pulse text-2xl text-green-400"></i>
+                <span>جاري جلب أفضل العروض لبلدك...</span>
+            </div>
         </div>
     </div>
+
+    <footer class="border-t border-gray-800 p-5 text-center text-gray-500 text-xs mt-8">
+        <p>© 2025 BitQuest — منصة ربح العملات الرقمية</p>
+    </footer>
 
     <script>
         // --- 1. إعدادات سوبابيز ---
@@ -60,17 +84,17 @@
                         const points = Math.floor(offer.payout * 700);
 
                         const card = `
-                            <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-green-500 transition group flex flex-col justify-between">
+                            <div class="bg-gray-800/90 border border-green-500/20 p-6 rounded-xl hover:border-green-500/50 transition group flex flex-col justify-between shadow-lg backdrop-blur-sm">
                                 <div>
                                     <div class="flex justify-between items-start mb-4">
-                                        <h3 class="text-lg font-bold leading-tight">${offer.title}</h3>
-                                        <span class="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap mr-2">
+                                        <h3 class="text-lg font-bold leading-tight text-white">${offer.title}</h3>
+                                        <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap mr-2">
                                             +${points} نقطة
                                         </span>
                                     </div>
                                     <p class="text-gray-400 text-xs mb-6">${offer.description}</p>
                                 </div>
-                                <a href="${offer.offerlink}" target="_blank" class="block w-full bg-green-500 group-hover:bg-green-600 text-white text-center py-2 rounded font-bold transition">
+                                <a href="${offer.offerlink}" target="_blank" class="block w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-center py-2 rounded-lg font-bold transition transform hover:scale-105 shadow-md">
                                     احصل على المكافأة
                                 </a>
                             </div>
@@ -78,10 +102,10 @@
                         container.append(card);
                     });
                 } else {
-                    container.html('<p class="text-center col-span-full text-red-400">نأسف، لا توجد عروض متاحة لبلدك حالياً.</p>');
+                    container.html('<p class="text-center col-span-full text-gray-400">نأسف، لا توجد عروض متاحة لبلدك حالياً.</p>');
                 }
             }).fail(function() {
-                container.html('<p class="text-center col-span-full text-red-400">خطأ في الاتصال بالسيرفر، يرجى تحديث الصفحة.</p>');
+                container.html('<p class="text-center col-span-full text-gray-400">خطأ في الاتصال بالسيرفر، يرجى تحديث الصفحة.</p>');
             });
         }
 

@@ -1,30 +1,63 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صنبور الفوست - منصة الأرباح</title>
+    <title>BitQuest - Crypto Faucet | Claim Free Points Every 5 Minutes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        }
+        .faucet-card {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+        .nav-blur {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        @keyframes drip {
+            0% { transform: translateY(-5px); opacity: 0.6; }
+            100% { transform: translateY(5px); opacity: 1; }
+        }
+        .faucet-icon {
+            animation: drip 1.5s ease-in-out infinite;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="min-h-screen font-sans">
 
-    <!-- شريط التنقل (Navbar) -->
-    <nav class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <a href="dashboard.html" class="text-gray-400 hover:text-white transition">⬅️ العودة للرئيسية</a>
-            <h1 class="text-xl font-bold text-teal-400">🚰 صنبور الفوست</h1>
+    <!-- Navbar (BitQuest style unified) -->
+    <nav class="nav-blur border-b border-gray-700 p-4 flex flex-wrap justify-between items-center px-6 shadow-lg sticky top-0 z-50 gap-3">
+        <div class="flex items-center gap-3 flex-wrap">
+            <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition flex items-center gap-1 bg-gray-800/50 px-3 py-1.5 rounded-lg text-sm">
+                <i class="fas fa-arrow-right text-xs"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-dragon text-green-400 text-xl"></i>
+                <h1 class="text-xl font-black text-white">Bit<span class="text-green-400">Quest</span></h1>
+            </div>
         </div>
-        <div class="bg-gray-900 px-4 py-1 rounded border border-gray-700 text-sm">
-            رصيدك: <span id="topPoints" class="text-green-400 font-bold">0</span> نقطة
+        <div class="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-700 shadow-md">
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fas fa-coins text-green-400"></i>
+                <span class="text-gray-300">Your balance:</span>
+                <span id="topPoints" class="text-green-400 font-black text-lg">0</span>
+                <span class="text-gray-400 text-xs">points</span>
+            </div>
         </div>
     </nav>
 
-    <div class="max-w-2xl mx-auto p-6 mt-10">
+    <div class="max-w-2xl mx-auto p-6 mt-6 md:mt-10">
         
-        <!-- إعلان البنر 468x60 العلوي الخاص بك -->
-        <div class="flex justify-center mb-6 overflow-hidden max-w-full">
-            <div class="bg-gray-800 p-1 text-center rounded-lg border border-gray-700">
+        <!-- Banner Ad (468x60 - preserved original ad code) -->
+        <div class="flex justify-center mb-8">
+            <div class="bg-gray-800/50 p-1 text-center rounded-xl border border-gray-700 shadow-md overflow-hidden">
                 <script>
                     atOptions = {
                         'key' : '3332ff0dea9a4b480c786186c2112ea9',
@@ -38,55 +71,95 @@
             </div>
         </div>
 
-        <!-- كرت المطالبة الرئيسي -->
-        <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700 text-center">
-            <h2 class="text-2xl font-bold mb-2 text-teal-400">طالب بمكافأتك المجانية!</h2>
-            <p class="text-gray-400 mb-6">يمكنك الحصول على <span class="text-green-400 font-bold">3 نقاط</span> كل 5 دقائق بدون مجهود.</p>
+        <!-- Main Faucet Claim Card -->
+        <div class="faucet-card rounded-2xl p-8 shadow-2xl border border-gray-700 text-center transition-all duration-300">
+            <div class="flex justify-center mb-4">
+                <div class="bg-green-500/20 p-4 rounded-full">
+                    <i class="fas fa-hand-holding-usd text-green-400 text-4xl faucet-icon"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-2 text-green-400">Claim Your Free Reward!</h2>
+            <p class="text-gray-300 mb-2">Get <span class="text-green-400 font-bold text-xl">3 points</span> every 5 minutes</p>
+            <p class="text-gray-500 text-xs mb-6">No strings attached — just one click</p>
 
-            <!-- زر الكابتشا والمطالبة -->
+            <!-- Claim Button & Cooldown Section -->
             <div class="space-y-6 flex flex-col items-center justify-center">
-                
-                <!-- زر المطالبة الفعلي -->
-                <button id="claimBtn" onclick="runFaucetClaim()" class="w-full sm:w-64 bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-8 rounded-lg text-xl shadow-lg transition transform hover:scale-105 disabled:bg-gray-700 disabled:text-gray-500 disabled:scale-100">
-                    اضغط للمطالبة 💰
+                <button id="claimBtn" onclick="runFaucetClaim()" 
+                        class="w-full sm:w-72 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-5 px-8 rounded-xl text-xl shadow-xl transition transform hover:scale-105 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <i class="fas fa-tint"></i>
+                    <span>Claim Now</span>
                 </button>
 
-                <!-- عداد الانتظار (يظهر فقط إذا كان الزر مقفلاً) -->
-                <div id="cooldownContainer" class="hidden text-orange-400 font-bold text-lg animate-pulse">
-                    ⏱️ يمكنك المطالبة مجدداً بعد: <span id="cooldownTimer">05:00</span>
+                <!-- Cooldown Timer Display -->
+                <div id="cooldownContainer" class="hidden bg-gray-900/60 backdrop-blur-sm px-6 py-3 rounded-full border border-green-500/40">
+                    <div class="flex items-center gap-3 text-green-400 font-bold text-lg">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span>Next claim in:</span>
+                        <span id="cooldownTimer" class="font-mono text-xl tracking-wider">05:00</span>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Extra info -->
+            <div class="mt-8 pt-4 border-t border-gray-700/50 text-xs text-gray-500 flex justify-center gap-4">
+                <span><i class="fas fa-shield-alt text-green-500/70"></i> Secure</span>
+                <span><i class="fas fa-infinity"></i> Unlimited claims</span>
+                <span><i class="fas fa-bolt"></i> Instant points</span>
             </div>
         </div>
 
+        <!-- Social Bar / Earnings Script (original preserved) -->
+        <div class="mt-8 text-center">
+            <div class="text-gray-600 text-xs mb-2">Sponsored Content</div>
+            <script src="https://pl29465244.effectivecpmnetwork.com/d6/a7/90/d6a790a2620fed6eed0f53885cbb2f75.js"></script>
+        </div>
     </div>
 
-    <!-- كود الـ Social Bar الحقيقي الخاص بك لربح تلقائي من مجرد فتح الصفحة -->
-    <script src="https://pl29465244.effectivecpmnetwork.com/d6/a7/90/d6a790a2620fed6eed0f53885cbb2f75.js"></script>
+    <footer class="border-t border-gray-800 p-5 text-center text-gray-500 text-xs mt-8">
+        <p>© 2025 BitQuest Faucet — Earn crypto effortlessly</p>
+    </footer>
 
     <script>
-        // --- إعدادات سوبابيز الخاصة بك والمحفوظة لدينا ---
+        // ==================== SUPABASE CONFIGURATION (FULLY ORIGINAL - NO CHANGES) ====================
         const SUPABASE_URL = 'https://qilhlovlotvieatbtkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbGhsb3Zsb3R2aWVhdGJ0a2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjQ4MDYsImV4cCI6MjA5NDM0MDgwNn0.b7NeZuXf_IighzSDDV2OpgIlM0QiaeKHBwyz2leo1GA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let countdownInterval;
-        const REWARD_POINTS = 3; // الجائزة 3 نقاط
+        const REWARD_POINTS = 3;
 
+        // --- Fetch current user and initialize faucet state ---
         async function initFaucet() {
             const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) return window.location.href = 'auth.html';
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
 
-            // جلب رصيد النقاط الحالي وعرضه بالأعلى
-            const { data: profile } = await supabaseClient.from('profiles').select('points').eq('id', user.id).single();
-            if (profile) document.getElementById('topPoints').innerText = profile.points;
-
-            // التحقق هل المستخدم لديه حظر انتظار حالي (Cooldown) مخزن في السيرفر
-            const { data: claimData } = await supabaseClient.from('faucet_claims').select('last_claimed_at').eq('user_id', user.id).single();
+            // Fetch and display current points
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('points')
+                .eq('id', user.id)
+                .single();
             
-            if (claimData) {
+            if (profile && profile.points !== undefined) {
+                document.getElementById('topPoints').innerText = profile.points;
+            } else {
+                document.getElementById('topPoints').innerText = '0';
+            }
+
+            // Check existing cooldown from faucet_claims table
+            const { data: claimData, error: claimError } = await supabaseClient
+                .from('faucet_claims')
+                .select('last_claimed_at')
+                .eq('user_id', user.id)
+                .single();
+            
+            if (claimData && claimData.last_claimed_at) {
                 const lastClaimTime = new Date(claimData.last_claimed_at).getTime();
                 const timePassed = Math.floor((Date.now() - lastClaimTime) / 1000);
-                const cooldownDuration = 300; // 5 دقائق تعادل 300 ثانية
+                const cooldownDuration = 300; // 5 minutes = 300 seconds
 
                 if (timePassed < cooldownDuration) {
                     startCooldown(cooldownDuration - timePassed);
@@ -94,67 +167,100 @@
             }
         }
 
-        // --- دالة تشغيل المطالبة والاتصال بالسيرفر ---
+        // --- Main claim function calling Supabase RPC (exactly as original) ---
         async function runFaucetClaim() {
             const claimBtn = document.getElementById('claimBtn');
             claimBtn.disabled = true;
-            claimBtn.innerText = "جاري التحقق... ⏳";
+            claimBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span> Processing...</span>';
 
-            // استدعاء دالة السيرفر الأمنية (RPC) لطلب النقاط وحساب فرق الوقت
+            // Call secure RPC function that handles cooldown and points addition
             const { data, error } = await supabaseClient.rpc('claim_faucet_points', { reward_points: REWARD_POINTS });
 
             if (error) {
-                alert("حدث خطأ غير متوقع أثناء الاتصال بقاعدة البيانات.");
+                console.error("RPC Error:", error);
+                alert("⚠️ Unexpected error occurred. Please refresh and try again.");
                 claimBtn.disabled = false;
-                claimBtn.innerText = "اضغط للمطالبة 💰";
+                claimBtn.innerHTML = '<i class="fas fa-tint"></i><span>Claim Now</span>';
                 return;
             }
 
-            // قراءة رد السيرفر الذكي
-            const result = data[0]; 
+            // Response is an array with single object
+            const result = data[0];
 
             if (result.success) {
-                alert(result.message);
-                // تحديث رصيد النقاط المعروض في الأعلى فوراً
-                const topPointsEl = document.getElementById('topPoints');
-                topPointsEl.innerText = parseInt(topPointsEl.innerText) + REWARD_POINTS;
+                // Show success message with small notification
+                showToast(result.message || "✅ You earned 3 points!", "success");
                 
-                // بدء عداد الخمس دقائق
-                startCooldown(result.next_claim_in);
+                // Update points display instantly
+                const pointsSpan = document.getElementById('topPoints');
+                let currentPoints = parseInt(pointsSpan.innerText);
+                if (isNaN(currentPoints)) currentPoints = 0;
+                pointsSpan.innerText = currentPoints + REWARD_POINTS;
+                
+                // Start cooldown timer
+                if (result.next_claim_in && result.next_claim_in > 0) {
+                    startCooldown(result.next_claim_in);
+                } else {
+                    startCooldown(300);
+                }
             } else {
-                alert(result.message);
-                startCooldown(result.next_claim_in);
+                // User is on cooldown or error message from RPC
+                alert(result.message || "❌ Cannot claim at this moment.");
+                if (result.next_claim_in && result.next_claim_in > 0) {
+                    startCooldown(result.next_claim_in);
+                }
+                claimBtn.disabled = false;
+                claimBtn.innerHTML = '<i class="fas fa-tint"></i><span>Claim Now</span>';
             }
         }
 
-        // --- دالة تشغيل العداد التنازلي بصيغة الدقائق والثواني دقيقة ---
+        // --- Cooldown timer with minutes:seconds format ---
         function startCooldown(seconds) {
             const claimBtn = document.getElementById('claimBtn');
             const container = document.getElementById('cooldownContainer');
             const timerText = document.getElementById('cooldownTimer');
 
+            // Clear any existing interval
+            if (countdownInterval) clearInterval(countdownInterval);
+            
             claimBtn.disabled = true;
-            claimBtn.innerText = "مغلق 🔒";
+            claimBtn.innerHTML = '<i class="fas fa-lock"></i><span> Locked</span>';
             container.classList.remove('hidden');
 
-            clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-                seconds--;
-                
-                // تحويل الثواني المتبقية إلى شكل مريح للعين (04:32 مثلاً)
-                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-                const secs = (seconds % 60).toString().padStart(2, '0');
+            let remaining = seconds;
+            
+            const updateTimer = () => {
+                const mins = Math.floor(remaining / 60).toString().padStart(2, '0');
+                const secs = (remaining % 60).toString().padStart(2, '0');
                 timerText.innerText = `${mins}:${secs}`;
-
-                if (seconds <= 0) {
+                
+                if (remaining <= 0) {
                     clearInterval(countdownInterval);
                     claimBtn.disabled = false;
-                    claimBtn.innerText = "اضغط للمطالبة 💰";
+                    claimBtn.innerHTML = '<i class="fas fa-tint"></i><span>Claim Now</span>';
                     container.classList.add('hidden');
                 }
-            }, 1000);
+                remaining--;
+            };
+            
+            updateTimer(); // initial display
+            countdownInterval = setInterval(updateTimer, 1000);
         }
 
+        // Simple toast notification (doesn't interfere with any core function)
+        function showToast(message, type = "info") {
+            // Create temporary toast element
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-5 right-5 z-50 bg-gray-800 border-l-4 ${type === 'success' ? 'border-green-500' : 'border-orange-500'} text-white px-5 py-3 rounded-lg shadow-2xl text-sm font-medium flex items-center gap-2 animate-bounce`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle text-green-400' : 'fa-exclamation-triangle text-orange-400'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Initialize everything when page loads
         initFaucet();
     </script>
 </body>
